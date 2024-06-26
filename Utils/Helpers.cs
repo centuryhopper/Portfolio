@@ -61,7 +61,7 @@ public static class Helpers
         }
     }
 
-    public static BlogModel ToPasswordManagerAccountModel(this Blog account)
+    public static BlogModel ToBlogModel(this Blog account)
     {
         return new ()
         {
@@ -70,6 +70,18 @@ public static class Helpers
             ,PreviewDesc = account.PreviewDesc
             ,RouteName = account.RouteName
             ,FullDesc = account.FullDesc
+        };
+    }
+
+    public static Blog ToBlog(this BlogModel vm)
+    {
+        return new ()
+        {
+            Title = vm.Title
+            ,Date = vm.Date
+            ,PreviewDesc = vm.PreviewDesc
+            ,RouteName = vm.RouteName
+            ,FullDesc = vm.FullDesc
         };
     }
 

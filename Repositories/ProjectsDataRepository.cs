@@ -44,7 +44,7 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardModel>
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            projectCards = await neondbContext.ProjectCards.Where(p => p.Title == searchTerm).AsNoTracking().ToListAsync();
+            projectCards = await neondbContext.ProjectCards.Where(p => p.Title.ToLower().Contains(searchTerm.ToLower())).AsNoTracking().ToListAsync();
         }
         else
         {

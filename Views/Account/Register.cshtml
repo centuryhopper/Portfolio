@@ -24,6 +24,9 @@
 <h4 class="mb-3">Create a new account</h4>
 <hr />
 <form id="contactFormRegister" method="post" action="@Url.Action("Register", "Account")" class="m-3">
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
     @Html.AntiForgeryToken()
     <div class="form-outline mb-1">
         @Html.LabelFor(m => m.FirstName, new { @class = "form-label" })

@@ -39,7 +39,13 @@
             </tr>
         </tfoot>
     </table>
+
+
 </div>
+@if (User.IsInRole("Admin"))
+{
+    @Html.ActionLink("Add New Blog", "AddBlog", "Blogs", null, new {@class="btn btn-primary"})
+}
 
 @section Scripts {
     <script>

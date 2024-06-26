@@ -46,14 +46,14 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                         <div class="navbar-nav">
-                            @Html.ActionLink("About Me", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Home", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Blogs", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Contact Me", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Projects", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Skills", "Blogs", "Blogs", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Settings", "Settings", "Home", null, new { @class = "nav-link" })
-                            @Html.ActionLink("Account", "EditProfile", "Account", null, new { @class = "nav-link" })
+                            @Html.ActionLink("About Me", "AboutMe", "Home", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Blogs", "Index", "Blogs", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Contact Me", "Index", "Contacts", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Projects", "Index", "Projects", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Skills", "Index", "Skills", null, new { @class = "nav-link" })
+                            @Html.ActionLink("Settings", "Index", "Settings", null, new { @class = "nav-link" })
+                            @* @Html.ActionLink("Account", "EditProfile", "Account", null, new { @class = "nav-link" }) *@
                             <partial name="_LoginPartial" />
                         </div>
                     </div>
@@ -67,13 +67,35 @@
     </div>
     <div id="footer-container" class="footer-special">
         <footer id="fwc-footer">
-            <div class="container">
-                <div class="version-foot-style">
+            
+            
+
+            <div class="container row">
+                <div class="col-5">
+                    <div class="row">
+                        @* <div class="col-3"></div>
+                        <div class="col-3"></div> *@
+                        <div class="col-2">
+                            <a href="https://www.linkedin.com/in/leo-zhang2020/" target="_blank" class="text-white mx-2">
+                                <i class="fab fa-linkedin fa-2x"></i>
+                            </a>
+                        </div>
+                        <div class="col-1">
+                            <a href="https://github.com/centuryhopper?tab=repositories" target="_blank" class="text-white mx-2">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                        @* <div class="col-2"></div>
+                        <div class="col-2"></div> *@
+                    </div>
+                </div>
+                <div class="version-foot-style col-3">
                     &copy; @DateTime.Now.Year - Leo's Portfolio
                     <br>
                     All rights reserved.
                 </div>
             </div>
+
         </footer>
     </div>
     @* <script src="~/lib/jquery/dist/jquery.min.js"></script> *@

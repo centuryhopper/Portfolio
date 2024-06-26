@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Entities;
 using Portfolio.Repositories;
+using Portfolio.Utilities;
 
 
 namespace Portfolio.Controllers;
@@ -17,13 +18,15 @@ public class BlogsController : Controller
         this.BlogDataRepo = BlogDataRepo;
     }
 
-    public async Task<IActionResult> Blogs()
+    [AllowAnonymous]
+    public async Task<IActionResult> Index()
     {
         ViewBag.BlogsList = await BlogDataRepo.GetBlogDataAsync();
 
         return View();
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> BlogCard(string title)
     {
         ViewBag.BlogCard = await BlogDataRepo.GetBlogByTitleAsync(title);
@@ -32,8 +35,14 @@ public class BlogsController : Controller
     }
 
 
+    public IActionResult AddBlog()
+    {
+        return View();
+    }
+
+
     [HttpPost]
-    public async Task<IActionResult> Blogs(BlogModel vm)
+    public async Task<IActionResult> AddBlog(BlogModel vm)
     {
         /*
         
@@ -58,13 +67,18 @@ public class BlogsController : Controller
 
         }
 
+        vm.PreviewDesc = vm.FullDesc.Substring(0, vm.FullDesc.IndexOf('!')+1);
+
         var data = await BlogDataRepo.AddBlogAsync(vm);
 
         if (!data.flag)
         {
-            return BadRequest(data);
+            TempData[TempDataKeys.ALERT_ERROR] = data.message;
+            return View();
         }
 
-        return Ok(data);
+        TempData[TempDataKeys.ALERT_SUCCESS] = "Blog Added!";
+
+        return View();
     }
 }

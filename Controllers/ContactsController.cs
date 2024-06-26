@@ -4,12 +4,10 @@ using Portfolio.Entities;
 using Portfolio.Repositories;
 
 
-namespace Portfolio.Presentation.Server.Controllers;
+namespace Portfolio.Controllers;
 
 
-[Route("api/[controller]")]
-[ApiController]
-public class ContactsController : ControllerBase
+public class ContactsController : Controller
 {
     private readonly IContactsDataRepository<ContactMeModel> contactRepo;
     private readonly ILogger<ContactsController> logger;
@@ -18,6 +16,11 @@ public class ContactsController : ControllerBase
     {
         this.contactRepo = contactRepo;
         logger = Logger;
+    }
+
+    public IActionResult Index()
+    {
+        return View();
     }
 
     [HttpGet]

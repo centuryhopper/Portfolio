@@ -1,15 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Entities;
 using Portfolio.Repositories;
 
+namespace Portfolio.Controllers;
 
 
-namespace Portfolio.Presentation.Server.Controllers;
-
-
-[Route("api/[controller]")]
-[ApiController]
-public class ProjectsController : ControllerBase
+public class ProjectsController : Controller
 {
     private readonly IProjectsDataRepository<ProjectCardModel> ProjectRepo;
 
@@ -18,17 +15,22 @@ public class ProjectsController : ControllerBase
         this.ProjectRepo = ProjectRepo;
     }
 
-    [HttpGet]
-    [Route("get-projects")]
-    public async Task<IActionResult> GetAsync()
+    public async Task<IActionResult> Index()
     {
-        var data = await ProjectRepo.GetDataAsync("");
+        ViewBag.ProjectList = await ProjectRepo.GetDataAsync("");
+        return View();
+    }
 
-        return Ok(data);
+    [HttpGet]
+    public async Task<IActionResult> GetFilteredProjectLst([FromQuery] string searchTerm)
+    {
+        var data = await ProjectRepo.GetDataAsync(searchTerm);
+        return Json(data);
     }
 
     [HttpPost]
     [Route("post-project")]
+    [Authorize]
     public async Task<IActionResult> AddAsync([FromBody] ProjectCardModel model)
     {
         var data = await ProjectRepo.AddProjectAsync(model);

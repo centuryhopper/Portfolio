@@ -4,12 +4,9 @@ using Portfolio.Repositories;
 
 
 
-namespace Portfolio.Presentation.Server.Controllers;
+namespace Portfolio.Controllers;
 
-
-[Route("api/[controller]")]
-[ApiController]
-public class SkillsController : ControllerBase
+public class SkillsController : Controller
 {
     private readonly ISkillsDataRepository<SkillModel> SkillRepo;
 
@@ -18,13 +15,11 @@ public class SkillsController : ControllerBase
         this.SkillRepo = SkillRepo;
     }
 
-    [HttpGet]
-    [Route("get-skills")]
-    public async Task<IActionResult> GetAsync()
+    public async Task<IActionResult> Index()
     {
-        var data = await SkillRepo.GetDataAsync();
+        ViewBag.SkillsLst = await SkillRepo.GetDataAsync();
 
-        return Ok(data);
+        return View();
     }
 
     [HttpPost]

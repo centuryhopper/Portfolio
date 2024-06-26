@@ -10,12 +10,14 @@ namespace MyApp.Namespace
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
+        private readonly RoleManager<ApplicationRole> roleManager;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.roleManager = roleManager;
         }
 
         // GET: AccountController
@@ -53,6 +55,20 @@ namespace MyApp.Namespace
             return View();
         }
 
+        private async Task<IdentityResult> CreateRole(string roleName)
+        {
+            // We just need to specify a unique role name to create a new role
+            ApplicationRole role = new ApplicationRole
+            {
+                Name = roleName
+            };
+
+            // Saves the role in the underlying AspNetRoles table
+            IdentityResult result = await roleManager.CreateAsync(role);
+
+            return result;
+        }
+
         [HttpPost]
         public async Task<ActionResult> Register(RegisterVM vm)
         {
@@ -65,6 +81,23 @@ namespace MyApp.Namespace
                     Email = vm.Email
                 };
 
+                var roleToCreate = "Admin";
+
+                if (!await roleManager.RoleExistsAsync(roleToCreate))
+                {
+                    var createRole = await CreateRole(roleToCreate);
+                    if (!createRole.Succeeded)
+                    {
+                        foreach (var error in createRole.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+
+                        return View(vm);
+                    }
+                }
+                
+
                 // Store user data in AspNetUsers database table
                 var result = await userManager.CreateAsync(user, vm.Password);
 
@@ -72,6 +105,20 @@ namespace MyApp.Namespace
                 // SignInManager and redirect to index action of HomeController
                 if (result.Succeeded)
                 {
+                    if (!await userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        var addRoleResult = await userManager.AddToRoleAsync(user, "Admin");
+                        if (!addRoleResult.Succeeded)
+                        {
+                            foreach (var error in addRoleResult.Errors)
+                            {
+                                ModelState.AddModelError(string.Empty, error.Description);
+                            }
+
+                            return View(vm);
+                        }
+                    }
+
                     await signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction(nameof(HomeController.Index), "Home");
                 }
