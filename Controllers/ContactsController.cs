@@ -61,6 +61,8 @@ public class ContactsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        // TODO: have a check to avoid users from spamming you with messages
+
         var data = await contactRepo.PostDataAsync(vm);
 
         if (!data.flag)
