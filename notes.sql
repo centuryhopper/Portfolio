@@ -49,7 +49,7 @@ CREATE TABLE BLOG (
     title VARCHAR(255) NOT NULL,
     date TIMESTAMP NOT NULL,
     preview_desc TEXT NOT NULL,
-    route_name VARCHAR(255) NOT NULL,
+    route_name VARCHAR(255),
     full_desc TEXT NOT NULL
 );
 

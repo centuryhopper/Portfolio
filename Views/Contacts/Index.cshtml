@@ -20,7 +20,6 @@
                 Contact Form
             </h4>
             <div class="card-body">
-                <DataAnnotationsValidator />
                 <p class="form-group">
                     @Html.LabelFor(m=>m.Name)
                     @Html.TextBoxFor(m=>m.Name, null, new {@class="form-control"})
@@ -42,9 +41,7 @@
                     @Html.ValidationMessageFor(m => m.Message, "", new { @class = "text-danger" })
                 </p>
             </div>
-            <div class="m-3">
-                @* <button class="btn btn-primary" @onclick="@(()=>Modal.Show<PopupDialog>("notice"))">Submit</button> *@
-               
+            <div class="m-3">               
                 <button class="btn btn-primary btn-with-shadow">Submit</button>
             </div>
         </div>

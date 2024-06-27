@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Portfolio.Entities;
 using Portfolio.Repositories;
 using Portfolio.Utilities;
@@ -30,14 +31,19 @@ public class BlogsController : Controller
     public async Task<IActionResult> BlogCard(string title)
     {
         ViewBag.BlogCard = await BlogDataRepo.GetBlogByTitleAsync(title);
-
         return View();
     }
 
 
     public IActionResult AddBlog()
     {
-        return View();
+        var previousInfo = HttpContext.Session.GetString("ADD_BLOG") ?? "";
+
+        BlogModel? vm = string.IsNullOrEmpty(previousInfo) ? null : JsonConvert.DeserializeObject<BlogModel>(previousInfo);
+
+        HttpContext.Session.Remove("ADD_BLOG");
+
+        return View(vm);
     }
 
 
@@ -64,7 +70,11 @@ public class BlogsController : Controller
         */
         if (!ModelState.IsValid)
         {
+            var errors = Helpers.GetErrors<BlogsController>(ModelState);
+            TempData[TempDataKeys.ALERT_ERROR] = string.Join("$$$", errors);
 
+            HttpContext.Session.SetString("ADD_BLOG", JsonConvert.SerializeObject(vm, Formatting.Indented));
+            return RedirectToAction(nameof(AddBlog));
         }
 
         vm.PreviewDesc = vm.FullDesc.Substring(0, vm.FullDesc.IndexOf('!')+1);
@@ -74,11 +84,12 @@ public class BlogsController : Controller
         if (!data.flag)
         {
             TempData[TempDataKeys.ALERT_ERROR] = data.message;
-            return View();
+            HttpContext.Session.SetString("ADD_BLOG", JsonConvert.SerializeObject(vm, Formatting.Indented));
+            return RedirectToAction(nameof(AddBlog));
         }
 
         TempData[TempDataKeys.ALERT_SUCCESS] = "Blog Added!";
 
-        return View();
+        return RedirectToAction(nameof(AddBlog));
     }
 }

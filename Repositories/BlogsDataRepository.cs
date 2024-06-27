@@ -34,7 +34,7 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogModel>
 
             int mostRecentInsertedBlogModel = await neondbContext.Blogs.MaxAsync(b => b.Id);
 
-            foreach (var vUrlModel in model.VideoUrls)
+            foreach (var vUrlModel in model.VideoUrls ?? [])
             {
                 var videoUrl = new VideoUrl
                 {

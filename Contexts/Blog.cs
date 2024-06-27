@@ -13,7 +13,7 @@ public partial class Blog
 
     public string PreviewDesc { get; set; } = null!;
 
-    public string RouteName { get; set; } = null!;
+    public string? RouteName { get; set; }
 
     public string FullDesc { get; set; } = null!;
 

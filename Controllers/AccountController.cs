@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Framework;
 using Portfolio.Contexts;
 using Portfolio.Controllers;
 using Portfolio.Models;
+using Portfolio.Utilities;
 
 namespace MyApp.Namespace
 {
@@ -11,13 +13,15 @@ namespace MyApp.Namespace
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly RoleManager<ApplicationRole> roleManager;
+        private readonly IConfiguration configuration;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
+            SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager, IConfiguration configuration)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.roleManager = roleManager;
+            this.configuration = configuration;
         }
 
         // GET: AccountController
@@ -39,7 +43,8 @@ namespace MyApp.Namespace
                     return RedirectToAction(nameof(HomeController.Index), "Home");
                 }
 
-                ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+                // ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+                TempData[TempDataKeys.ALERT_ERROR] = "Invalid login attempt!";
             }
 
             if (!string.IsNullOrEmpty(returnUrl))
@@ -53,6 +58,35 @@ namespace MyApp.Namespace
         public ActionResult Register()
         {
             return View();
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string token, string userId)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(userId))
+            {
+                TempData[TempDataKeys.ALERT_ERROR] = "Missing user id or token.";
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user is null)
+            {
+                TempData[TempDataKeys.ALERT_ERROR] = "The user id is invalid";
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                TempData[TempDataKeys.ALERT_SUCCESS] = "The email has been successfully confirmed!";
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            TempData[TempDataKeys.ALERT_ERROR] = "We couldn't confirm your email.";
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+
         }
 
         private async Task<IdentityResult> CreateRole(string roleName)
@@ -96,7 +130,7 @@ namespace MyApp.Namespace
                         return View(vm);
                     }
                 }
-                
+
 
                 // Store user data in AspNetUsers database table
                 var result = await userManager.CreateAsync(user, vm.Password);
@@ -119,7 +153,18 @@ namespace MyApp.Namespace
                         }
                     }
 
-                    await signInManager.SignInAsync(user, isPersistent: false);
+                    var emailConfirmToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = emailConfirmToken }, Request.Scheme);
+
+                    var smtpInfo = configuration.GetConnectionString("smtp_client").Split("|");
+
+                    Helpers.SendEmail(subject: "confirm email", senderEmail: smtpInfo[0], senderPassword: smtpInfo[1], body: confirmationLink, receivers: [user.Email]);
+
+                    // await signInManager.SignInAsync(user, isPersistent: false);
+
+                    TempData[TempDataKeys.ALERT_SUCCESS] = "Registration Successful! Please confirm your email to login.";
+
                     return RedirectToAction(nameof(HomeController.Index), "Home");
                 }
 
@@ -130,6 +175,9 @@ namespace MyApp.Namespace
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
+
+
 
             return View(vm);
         }

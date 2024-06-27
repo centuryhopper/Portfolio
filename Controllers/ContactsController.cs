@@ -32,8 +32,7 @@ public class ContactsController : Controller
     }
 
     [HttpPost]
-    [Route("post-contact")]
-    public async Task<IActionResult> PostAsync([FromBody] ContactMeModel model)
+    public async Task<IActionResult> Index(ContactMeModel model)
     {
         /*
         {
