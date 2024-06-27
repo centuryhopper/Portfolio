@@ -39,6 +39,7 @@
                     @Html.LabelFor(m=>m.Message)
                     @Html.TextAreaFor(m=>m.Message, rows: 10, columns: 10, new {@class="form-control"})
                     @Html.ValidationMessageFor(m => m.Message, "", new { @class = "text-danger" })
+                    <p id="word_count"></p>
                 </p>
             </div>
             <div class="m-3">               
@@ -47,3 +48,18 @@
         </div>
     </form>
 </div>
+
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    $(function ()
+    {
+        $('#Message').keydown(function(){
+            //const minLen = $(this).attr('data-val-minlength-min')
+            //console.log(minLen);
+            $('#word_count').html('current character count: ' + $(this).val().length)
+        })
+    });
+  </script>
+}

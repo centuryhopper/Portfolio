@@ -59,7 +59,7 @@
     <script>
         $(function ()
         {
-            $('#txtSearch').change(function(){
+            $('#txtSearch').keyup(function(){
                 $.ajax({
                     type: "GET",
                     url: '@Url.Action("GetFilteredProjectLst", "Projects")' + '?searchTerm=' + $(this).val(),
