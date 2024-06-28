@@ -15,12 +15,14 @@ public class ContactsController : Controller
     private readonly IContactsDataRepository<ContactMeModel> contactRepo;
     private readonly ILogger<ContactsController> logger;
     private readonly IConfiguration configuration;
+    private readonly IHostEnvironment env;
 
-    public ContactsController(IContactsDataRepository<ContactMeModel> contactRepo, ILogger<ContactsController> Logger, IConfiguration configuration)
+    public ContactsController(IContactsDataRepository<ContactMeModel> contactRepo, ILogger<ContactsController> Logger, IConfiguration configuration, IHostEnvironment env)
     {
         this.contactRepo = contactRepo;
         logger = Logger;
         this.configuration = configuration;
+        this.env = env;
     }
 
     public IActionResult Index()
@@ -72,7 +74,7 @@ public class ContactsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var smtpInfo = configuration.GetConnectionString("smtp_client").Split("|");
+        var smtpInfo = env.IsDevelopment() ? configuration.GetConnectionString("smtp_client").Split("|") : Environment.GetEnvironmentVariable("smtp_client").Split("|");
 
         var userEmail = User.FindFirstValue(ClaimTypes.Name);
 
