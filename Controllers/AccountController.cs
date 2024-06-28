@@ -57,10 +57,10 @@ namespace MyApp.Namespace
             return View(vm);
         }
 
-        public ActionResult Register()
-        {
-            return View();
-        }
+        // public ActionResult Register()
+        // {
+        //     return View();
+        // }
 
         public async Task<IActionResult> ConfirmEmail(string token, string userId)
         {
@@ -105,84 +105,84 @@ namespace MyApp.Namespace
             return result;
         }
 
-        [HttpPost]
-        public async Task<ActionResult> Register(RegisterVM vm)
-        {
-            if (ModelState.IsValid)
-            {
-                // Copy data from RegisterViewModel to IdentityUser
-                var user = new ApplicationUser
-                {
-                    UserName = vm.Email,
-                    Email = vm.Email
-                };
+        // [HttpPost]
+        // public async Task<ActionResult> Register(RegisterVM vm)
+        // {
+        //     if (ModelState.IsValid)
+        //     {
+        //         // Copy data from RegisterViewModel to IdentityUser
+        //         var user = new ApplicationUser
+        //         {
+        //             UserName = vm.Email,
+        //             Email = vm.Email
+        //         };
 
-                var roleToCreate = "Admin";
+        //         var roleToCreate = "Admin";
 
-                if (!await roleManager.RoleExistsAsync(roleToCreate))
-                {
-                    var createRole = await CreateRole(roleToCreate);
-                    if (!createRole.Succeeded)
-                    {
-                        foreach (var error in createRole.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
+        //         if (!await roleManager.RoleExistsAsync(roleToCreate))
+        //         {
+        //             var createRole = await CreateRole(roleToCreate);
+        //             if (!createRole.Succeeded)
+        //             {
+        //                 foreach (var error in createRole.Errors)
+        //                 {
+        //                     ModelState.AddModelError(string.Empty, error.Description);
+        //                 }
 
-                        return View(vm);
-                    }
-                }
-
-
-                // Store user data in AspNetUsers database table
-                var result = await userManager.CreateAsync(user, vm.Password);
-
-                // If user is successfully created, sign-in the user using
-                // SignInManager and redirect to index action of HomeController
-                if (result.Succeeded)
-                {
-                    if (!await userManager.IsInRoleAsync(user, "Admin"))
-                    {
-                        var addRoleResult = await userManager.AddToRoleAsync(user, "Admin");
-                        if (!addRoleResult.Succeeded)
-                        {
-                            foreach (var error in addRoleResult.Errors)
-                            {
-                                ModelState.AddModelError(string.Empty, error.Description);
-                            }
-
-                            return View(vm);
-                        }
-                    }
-
-                    var emailConfirmToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = emailConfirmToken }, Request.Scheme);
-
-                    var smtpInfo = env.IsDevelopment() ? configuration.GetConnectionString("smtp_client").Split("|") : Environment.GetEnvironmentVariable("smtp_client").Split("|");
-
-                    Helpers.SendEmail(subject: "confirm email", senderEmail: smtpInfo[0], senderPassword: smtpInfo[1], body: confirmationLink, receivers: [user.Email]);
-
-                    // await signInManager.SignInAsync(user, isPersistent: false);
-
-                    TempData[TempDataKeys.ALERT_SUCCESS] = "Registration Successful! Please confirm your email to login.";
-
-                    return RedirectToAction(nameof(HomeController.Index), "Home");
-                }
-
-                // If there are any errors, add them to the ModelState object
-                // which will be displayed by the validation summary tag helper
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
+        //                 return View(vm);
+        //             }
+        //         }
 
 
+        //         // Store user data in AspNetUsers database table
+        //         var result = await userManager.CreateAsync(user, vm.Password);
+
+        //         // If user is successfully created, sign-in the user using
+        //         // SignInManager and redirect to index action of HomeController
+        //         if (result.Succeeded)
+        //         {
+        //             if (!await userManager.IsInRoleAsync(user, "Admin"))
+        //             {
+        //                 var addRoleResult = await userManager.AddToRoleAsync(user, "Admin");
+        //                 if (!addRoleResult.Succeeded)
+        //                 {
+        //                     foreach (var error in addRoleResult.Errors)
+        //                     {
+        //                         ModelState.AddModelError(string.Empty, error.Description);
+        //                     }
+
+        //                     return View(vm);
+        //                 }
+        //             }
+
+        //             var emailConfirmToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        //             var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = emailConfirmToken }, Request.Scheme);
+
+        //             var smtpInfo = env.IsDevelopment() ? configuration.GetConnectionString("smtp_client").Split("|") : Environment.GetEnvironmentVariable("smtp_client").Split("|");
+
+        //             Helpers.SendEmail(subject: "confirm email", senderEmail: smtpInfo[0], senderPassword: smtpInfo[1], body: confirmationLink, receivers: [user.Email]);
+
+        //             // await signInManager.SignInAsync(user, isPersistent: false);
+
+        //             TempData[TempDataKeys.ALERT_SUCCESS] = "Registration Successful! Please confirm your email to login.";
+
+        //             return RedirectToAction(nameof(HomeController.Index), "Home");
+        //         }
+
+        //         // If there are any errors, add them to the ModelState object
+        //         // which will be displayed by the validation summary tag helper
+        //         foreach (var error in result.Errors)
+        //         {
+        //             ModelState.AddModelError(string.Empty, error.Description);
+        //         }
+        //     }
 
 
-            return View(vm);
-        }
+
+
+        //     return View(vm);
+        // }
 
         public async Task<ActionResult> Logout()
         {
