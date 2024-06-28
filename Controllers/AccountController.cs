@@ -6,7 +6,7 @@ using Portfolio.Controllers;
 using Portfolio.Models;
 using Portfolio.Utilities;
 
-namespace MyApp.Namespace
+namespace Portfolio.Controllers
 {
     public class AccountController : Controller
     {

@@ -8,7 +8,7 @@ using Portfolio.Repositories;
 /*
 
 
-dotnet ef dbcontext scaffold "Server=Server=ep-shy-boat-a5z9pcbn.us-east-2.aws.neon.tech;Database=neondb;User Id=neondb_owner;Password=NSFWkL9Zwb6f;Port=5432Server=ep-shy-boat-a5z9pcbn.us-east-2.aws.neon.tech;Database=neondb;User Id=neondb_owner;Password=NSFWkL9Zwb6f;Port=5432" Npgsql.EntityFrameworkCore.PostgreSQL -o Temp
+dotnet ef dbcontext scaffold "" Npgsql.EntityFrameworkCore.PostgreSQL -o Contexts
 
 
 */
