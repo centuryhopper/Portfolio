@@ -1,0 +1,95 @@
+@page "/contact"
+
+
+@inject HttpClient httpClient
+
+
+
+<h1 class="text-center">Contact Me</h1>
+
+<div class="text-center">
+    <p>
+        I am excited to meet and work with you! We progress better together so please don't hesitate to contact me using
+        the form below.
+    </p>
+</div>
+
+<div class="container-fluid">
+    <EditForm Model="@Model" OnValidSubmit="HandlePostContact">
+        <div class="card">
+            <h4 class="text-center card-header">
+                Contact Form
+            </h4>
+            <div class="card-body">
+                <DataAnnotationsValidator />
+                <p class="form-group">
+                    <label class="m-2">Name</label>
+                    <InputText @bind-Value="Model.Name" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Name)" />
+                </p>
+                <p class="form-group">
+                    <label class="m-2">Email</label>
+                    <InputText @bind-Value="Model.Email" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Email)" />
+                </p>
+                <p class="form-group">
+                    <label class="m-2">Subject</label>
+                    <InputText @bind-Value="Model.Subject" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Subject)" />
+                </p>
+                <p class="form-group">
+                    <label class="m-2">Message</label>
+                    <InputTextArea @bind-Value="Model.Message" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Message)" />
+                </p>
+            </div>
+            <div class="m-3">
+                @* <button class="btn btn-primary" @onclick="@(()=>Modal.Show<PopupDialog>("notice"))">Submit</button> *@
+               
+                <button class="btn btn-primary btn-with-shadow">Submit</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@*
+
+github A-records
+
+185.199.108.153
+185.199.109.153
+185.199.110.153
+185.199.111.153
+
+*@
+
+<NotificationModal @ref="notificationModal" />
+
+@code {
+
+    protected ContactMeDTO Model = new();
+    private NotificationModal notificationModal = default!;
+
+    protected async Task HandlePostContact()
+    {
+        //System.Console.WriteLine($"posting model: {Model}");
+
+        var response = await
+        httpClient.PostAsJsonAsync($"https://portfoliobackend-production-95c1.up.railway.app/api/Contacts/post-contact", Model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            //Console.WriteLine(response.Content.ReadAsStringAsync());
+            Model = new();
+
+            notificationModal.Show("Success", "Thank you! Your message has been sent!", ModalType.SUCCESS);
+        }
+        else
+        {
+            Console.WriteLine("failed");
+            notificationModal.Show("Error", "Couldn't process your message", ModalType.ERROR);
+        }
+    }
+}
+
+

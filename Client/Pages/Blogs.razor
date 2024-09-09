@@ -1,0 +1,88 @@
+@page "/blogs"
+
+@using Newtonsoft.Json
+@inject HttpClient httpClient
+
+<div class="text-center m-5">
+    <h2><b>All Blogs</b></h2>
+</div>
+<hr />
+<div class="m-5">
+    <button class="btn btn-primary" @onclick="HandleSort">Sort by @(IsNewest ? "Oldest" : "Newest")</button>
+</div>
+
+@if (BlogCards is null || !BlogCards.Any())
+{
+    @* <p class="text-danger">No blogs found.</p> *@
+    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
+    Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+}
+else
+{
+    @foreach (var blog in BlogCards)
+    {
+        <div class="card mx-auto mt-3 w-75">
+    <div class="card-body">
+        <a href="@($"blogcard/{blog.Title}")">@blog.Title</a>
+        <h5 class="card-title">@blog.Date.ToString("MM-dd-yyyy")</h5>
+        <p class="card-text">@blog.PreviewDesc</p>
+    </div>
+</div>
+    }
+}
+
+@*
+INSERT INTO BLOG (
+title,
+date,
+preview_desc,
+route_name,
+full_desc)
+VALUES (
+'My New Site',
+'2022-04-22',
+'Hello there! Welcome to my website!',
+'welcomeBlog',
+'Hello there! Welcome to my website! Everything you see is created by me from scratch using ASP.Net Core and Razor
+pages! My previous website was made in Vue.js but I wanted to learn how to use Razor pages since that was I needed to
+learn on the job as a .Net developer. I will most likely write mainly about programming and programming-adjacent topics,
+but I may occasionally dip into other subjects if something catches my attention.'
+);
+
+
+*@
+
+@code {
+
+    protected IEnumerable<BlogDTO>? BlogCards;
+    protected bool IsNewest = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: later on will use repository pattern and dapper context from database
+        //var client = httpClientFactory.CreateClient("API");
+        var response = await httpClient.GetAsync("https://portfoliobackend-production-95c1.up.railway.app/api/Blogs/get-blogs");
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            var dto = await response.Content.ReadFromJsonAsync<IEnumerable<BlogDTO>>();
+
+            BlogCards = dto;
+        }
+
+    }
+
+    protected void HandleSort()
+    {
+        if (IsNewest)
+        {
+            BlogCards = BlogCards?.OrderBy(x => x.Date);
+        }
+        else
+        {
+            BlogCards = BlogCards?.OrderByDescending(x => x.Date);
+        }
+        IsNewest = !IsNewest;
+    }
+}

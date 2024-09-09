@@ -1,0 +1,83 @@
+@page "/projects"
+
+@using Newtonsoft.Json
+@inject HttpClient httpClient
+
+<div class="container">
+    <div class="row pt-5">
+        <div class="text-center col-12">
+            <h3 class="text-uppercase border-bottom mb-4">List of projects</h3>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label for="txtSearch" class="form-label">Search by title</label>
+        <input type="text" class="form-control m-3" placeholder="Search project by title" @bind="SearchTerm"
+            @oninput="HandleSearchFilter" />
+    </div>
+
+    <div class="row g-3">
+        @if (ProjectList is null || !ProjectList.Any())
+        {
+            @* <p>No results found from your search query :(</p> *@
+            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
+            Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+        }
+        else
+        {
+            @foreach (var info in ProjectList)
+            {
+                <div class="col-12 col-md-6 col-lg-6 col-sm-6">
+                    <div class="card">
+                        <img src="@info.ImgUrl" class="card-img-top" alt="Card Image" />
+                        <div class="card-body">
+                            <h5 class="card-title text-center">@info.Title</h5>
+                            <p class="card-text mb-4">@info.Description</p>
+                            <div class="text-center">
+                                <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
+                                    href="@info.ProjectLink">Link to project
+                                </a>
+                                <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
+                                    href="@info.SourceCodeLink">Source code</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+
+@code {
+    // https://leopasswordmanager-production.up.railway.app/Account/Login
+    protected IEnumerable<ProjectCardDTO>? ProjectList { get; set; }
+    protected string? SearchTerm { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: later on will use repository pattern and dapper context from database
+        //var client = httpClientFactory.CreateClient("API");
+        var response = await
+        httpClient.GetAsync("https://portfoliobackend-production-95c1.up.railway.app/api/Projects/get-projects");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var dto = await response.Content.ReadFromJsonAsync<IEnumerable<ProjectCardDTO>>();
+
+            ProjectList = dto;
+        }
+
+    }
+
+    protected void HandleSearchFilter(ChangeEventArgs e)
+    {
+        SearchTerm = e?.Value?.ToString();
+        if (string.IsNullOrEmpty(SearchTerm))
+        {
+            return;
+        }
+
+        ProjectList = ProjectList?.Where(project => project.Title!.ToLower().Contains(SearchTerm.ToLower()));
+    }
+}

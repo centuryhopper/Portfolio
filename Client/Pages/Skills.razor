@@ -1,0 +1,50 @@
+@page "/skills"
+@inject HttpClient httpClient
+
+
+@if (SkillsLst is null || !SkillsLst.Any())
+{
+    @* <div>No skills to show :/</div> *@
+    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
+    Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+}
+else
+{
+    @foreach (var (i, skill) in SkillsLst.Select((skill, idx) => (idx, skill)))
+    {
+
+        <h2>@skill.Title</h2>
+        <ul>
+    @foreach (var desc in skill.Descriptions)
+            {
+                <li>
+                    @desc
+                </li>
+            }
+        </ul>
+        if (i != SkillsLst.Count() - 1)
+        {
+            <hr>
+        }
+    }
+}
+
+
+
+@code {
+
+    private IEnumerable<SkillDTO>? SkillsLst { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await
+        httpClient.GetAsync("https://portfoliobackend-production-95c1.up.railway.app/api/Skills/get-skills");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var dto = await response.Content.ReadFromJsonAsync<IEnumerable<SkillDTO>>();
+
+            SkillsLst = dto;
+        }
+    }
+}
