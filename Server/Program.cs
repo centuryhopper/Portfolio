@@ -10,9 +10,31 @@ using NpgsqlTypes;
 using Server.Contexts;
 using Server.Entities;
 using Server.Repositories;
+using Shared.Models;
 using Swashbuckle.AspNetCore.Filters;
 
 // MUST HAVE IT LIKE THIS FOR NLOG TO RECOGNIZE DOTNET USER-SECRETS INSTEAD OF HARDCODED DELIMIT PLACEHOLDER VALUE FROM APPSETTINGS.JSON
+
+/*
+    dotnet ef dbcontext scaffold "Name=ConnectionStrings:PortfolioDB" Npgsql.EntityFrameworkCore.PostgreSQL -t blog -t contacttable -t project_card -t skill -t skill_description -t video_url -o Entities -c PortfolioDBContext --context-dir Contexts -f
+
+    to test api in swagger:
+        run "dotnet watch run" and look at
+        http://localhost:5224/swagger/index.html
+
+
+    to test entire app from blazor wasm:
+        run "dotnet watch run --launch-profile https"
+
+bulk insert:
+\copy table_name FROM 'path/to/csv_file' WITH (FORMAT csv, HEADER true);
+
+in the PasswordManagerDbContext, make sure this is commented out or removed otherwise the deployed version of this app won't work
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    => optionsBuilder.UseNpgsql("Name=ConnectionStrings:DB_CONN");
+
+
+*/
 
 #if DEBUG
     var logger = LogManager.Setup().LoadConfigurationFromFile("nlog_dev.config").GetCurrentClassLogger();
@@ -46,6 +68,7 @@ try
     });
 
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+    builder.Services.AddScoped<IBlogsDataRepository<BlogDTO>, BlogsDataRepository>();
 
     // Configure the Identity database context
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -58,15 +81,15 @@ try
             );
 
     // add your custom db contexts here
-    // builder.Services.AddDbContext<StockDataDbContext>(options =>
-    // {
-    //     options.UseNpgsql(builder.Environment.IsDevelopment()
-    //                 ?
-    //                     builder.Configuration.GetConnectionString("StockDataDB")
-    //                 :
-    //                     Environment.GetEnvironmentVariable("StockDataDB")
-    //                 ).EnableSensitiveDataLogging();
-    // });
+    builder.Services.AddDbContext<PortfolioDBContext>(options =>
+    {
+        options.UseNpgsql(builder.Environment.IsDevelopment()
+                    ?
+                        builder.Configuration.GetConnectionString("PortfolioDB")
+                    :
+                        Environment.GetEnvironmentVariable("PortfolioDB")
+                    ).EnableSensitiveDataLogging();
+    });
 
     builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
