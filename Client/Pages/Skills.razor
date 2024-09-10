@@ -38,13 +38,12 @@ else
     protected override async Task OnInitializedAsync()
     {
         var response = await
-        httpClient.GetAsync("https://portfoliobackend-production-95c1.up.railway.app/api/Skills/get-skills");
+        httpClient.GetAsync("");
 
         if (response.IsSuccessStatusCode)
         {
-            var dto = await response.Content.ReadFromJsonAsync<IEnumerable<SkillDTO>>();
-
-            SkillsLst = dto;
+            //var dto = await response.Content.ReadFromJsonAsync<IEnumerable<SkillDTO>>();
+            //SkillsLst = dto;
         }
     }
 }

@@ -46,8 +46,7 @@ public class BlogsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpPost]
-    [Route("post-blogs")]
+    [HttpPost("post-blog")]
     public async Task<IActionResult> PostBlogAsync([FromBody] BlogDTO BlogDTO)
     {
         /*

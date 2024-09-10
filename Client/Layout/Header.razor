@@ -1,0 +1,28 @@
+<header id="fwc-header">
+    <div class="container-fluid">
+        @* <div class="top-space">
+            <div class="float-end">
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="text-danger">@context.User.Identity!.Name</span>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div> *@
+        <h1 id="title-text" class="page-title">
+            <a class="logo-placement" href="#">
+                <img src="images/1023-portfolio.svg" alt="My Portfolio Log" class="logo-img" />
+            </a>
+            <span>
+                <label class="app-name">Leo's Personal Portfolio</label>
+            </span>
+        </h1>
+        <span id="burger-slice">
+            <button id="burger-top" class="hamburger" type="button" aria-label="mobile nav button" data-toggle="collapse" data-target="#site-navigation" aria-controls="site-navigation" aria-expanded="false">
+                <span class="hamburger-box navbar-toggler" data-bs-toggle="collapse" data-bs-target="#site-navigation" aria-controls="site-navigation" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="hamburger-inner"></span>
+                </span>
+            </button>
+        </span>
+    </div>
+</header>

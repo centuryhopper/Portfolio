@@ -1,21 +1,25 @@
 @page "/blogs"
 
 @using Newtonsoft.Json
-@inject HttpClient httpClient
 
 <div class="text-center m-5">
     <h2><b>All Blogs</b></h2>
 </div>
 <hr />
 <div class="m-5">
-    <button class="btn btn-primary" @onclick="HandleSort">Sort by @(IsNewest ? "Oldest" : "Newest")</button>
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-primary" @onclick="HandleSort">Sort by @(IsNewest ? "Oldest" : "Newest")</button>
+        <a class="btn btn-secondary" href="addblog">Add Blog</a>
+    </div>
 </div>
 
 @if (BlogCards is null || !BlogCards.Any())
 {
-    @* <p class="text-danger">No blogs found.</p> *@
-    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
-    Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+    <div class="d-flex justify-content-center" style="display: none;">
+        <div id="loadingIndicator" class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {
@@ -57,17 +61,16 @@ but I may occasionally dip into other subjects if something catches my attention
     protected IEnumerable<BlogDTO>? BlogCards;
     protected bool IsNewest = false;
 
+    private HttpClient httpClient;
+
     protected override async Task OnInitializedAsync()
     {
-        // TODO: later on will use repository pattern and dapper context from database
-        //var client = httpClientFactory.CreateClient("API");
-        var response = await httpClient.GetAsync("https://portfoliobackend-production-95c1.up.railway.app/api/Blogs/get-blogs");
-
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        var response = await httpClient.GetAsync("api/Blogs/get-blogs");
 
         if (response.IsSuccessStatusCode)
         {
             var dto = await response.Content.ReadFromJsonAsync<IEnumerable<BlogDTO>>();
-
             BlogCards = dto;
         }
 

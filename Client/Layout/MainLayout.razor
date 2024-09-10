@@ -1,34 +1,36 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
-
 @inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            @* <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a> *@
-            @* <LoginDisplay></LoginDisplay> *@
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+ 
+<div class="wrapper">
+    <Header />
+    <Navigation>
+        <NavSelections/>
+        <LoginDisplay/>
+    </Navigation>
+ 
+    <main role="main" class="p-3 pt-lg-0 pt-4">
+        @* <div class="container">
+            <p>
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="text-success fw-bold mx-auto">User: @context.User.Identity!.Name</span>
+                    </Authorized>
+                </AuthorizeView>
+            </p>
+        </div> *@
+        @Body
     </main>
-
-    <Footer/>
+ 
 </div>
-
+ 
+<Footer />
 @code {
     private bool isAuthenticated;
-
     protected override async Task OnInitializedAsync()
     {
         var authState = await ((ApiAuthenticationStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync();
         isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
     }
-
 }

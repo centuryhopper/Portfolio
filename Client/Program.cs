@@ -42,6 +42,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddScoped<IContactsService<ContactMeDTO>, ContactsService>();
+// builder.Services.AddScoped<IBlo<ContactMeDTO>, ContactsService>();
 
 
 await builder.Build().RunAsync();

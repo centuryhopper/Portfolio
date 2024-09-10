@@ -18,6 +18,7 @@
 @using Shared.Models
 @using Newtonsoft.Json
 @using System.Security.Claims
+@using static Shared.Models.ServiceResponses
 @using ModalType = Client.Utils.ModalType
 
 
@@ -25,4 +26,6 @@
 @inject IJSRuntime jsRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILocalStorageService localStorageService
+@inject IHttpClientFactory httpClientFactory
+
 

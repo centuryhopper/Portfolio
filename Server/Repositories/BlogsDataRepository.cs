@@ -60,8 +60,6 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
         var videoUrls = await neondbContext.VideoUrls.Where(v => v.BlogId == blog.Id).Select(v => new VideoUrlDTO
         {
             url = v.Url
-            ,
-            title = "test"
         }).ToListAsync();
 
         return new BlogDTO
@@ -92,7 +90,6 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
                 FullDesc = b.FullDesc,
                 VideoUrls = b.VideoUrls.Select(v => new VideoUrlDTO
                 {
-                    title = "test",
                     url = v.Url
                 }).ToList(),
             }).ToListAsync();
@@ -112,7 +109,6 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
                 FullDesc = b.FullDesc,
                 VideoUrls = b.VideoUrls.Select(v => new VideoUrlDTO
                 {
-                    title = "test",
                     url = v.Url
                 }).ToList(),
             }).ToListAsync();

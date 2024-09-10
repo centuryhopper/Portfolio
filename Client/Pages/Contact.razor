@@ -1,6 +1,6 @@
 @page "/contact"
 
-
+@using System.Timers
 @inject HttpClient httpClient
 
 
@@ -44,13 +44,16 @@
                 </p>
             </div>
             <div class="m-3">
-                @* <button class="btn btn-primary" @onclick="@(()=>Modal.Show<PopupDialog>("notice"))">Submit</button> *@
-               
-                <button class="btn btn-primary btn-with-shadow">Submit</button>
+                <button class="btn btn-primary btn-with-shadow">Submit (@submissionCount submissions)</button>
             </div>
         </div>
     </EditForm>
 </div>
+
+@if (isCooldown)
+{
+    <p class="text-bg-warning">Please wait @cooldownSeconds seconds before submitting again.</p>
+}
 
 @*
 
@@ -69,13 +72,57 @@ github A-records
 
     protected ContactMeDTO Model = new();
     private NotificationModal notificationModal = default!;
+    private int submissionCount = 0;
+    private bool isCooldown = false;
+    private const int COOL_DOWN_TIME = 30;
+    private int cooldownSeconds = COOL_DOWN_TIME; // Cooldown in seconds
+    private Timer cooldownTimer;
+
+    private void StartCooldownTimer()
+    {
+        cooldownTimer = new Timer(1000); // Set the interval to 1 second
+        cooldownTimer.Elapsed += OnCooldownElapsed;
+        cooldownTimer.Start();
+    }
+
+    private void OnCooldownElapsed(object sender, ElapsedEventArgs e)
+    {
+        cooldownSeconds--;
+
+        if (cooldownSeconds == 0)
+        {
+            cooldownTimer.Stop();
+            cooldownTimer.Dispose();
+            isCooldown = false;
+            cooldownSeconds = COOL_DOWN_TIME; // Reset cooldown for next submission
+        }
+
+        InvokeAsync(StateHasChanged); // Refresh the UI
+    }
+
+    // Dispose timer when component is disposed
+    public void Dispose()
+    {
+        cooldownTimer?.Dispose();
+    }
 
     protected async Task HandlePostContact()
     {
         //System.Console.WriteLine($"posting model: {Model}");
 
+        if (isCooldown)
+        {
+            return;
+        }
+
+        submissionCount++;
+        isCooldown = true;
+
+        // Start the cooldown timer
+        StartCooldownTimer();
+
         var response = await
-        httpClient.PostAsJsonAsync($"https://portfoliobackend-production-95c1.up.railway.app/api/Contacts/post-contact", Model);
+        httpClient.PostAsJsonAsync($"", Model);
 
         if (response.IsSuccessStatusCode)
         {
@@ -91,5 +138,3 @@ github A-records
         }
     }
 }
-
-
