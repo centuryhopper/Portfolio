@@ -1,21 +1,29 @@
 
+function blazorFocusElement(element){
+    if (element) {
+        element.focus();
+    }
+};
 
 function showHidePasswordField(fieldId)
 {
-    $(`#${fieldId} a`).on('click', function(event) {
+    document.querySelector(`#${fieldId} a`).addEventListener('click', function(event) {
         event.preventDefault();
-        console.log(fieldId)
-        if($(`#${fieldId} input`).attr("type") === "text")
+        //console.log(fieldId);
+        const input = document.querySelector(`#${fieldId} input`);
+        const icon = document.querySelector(`#${fieldId} i`);
+    
+        if (input.getAttribute("type") === "text")
         {
-            $(`#${fieldId} input`).attr('type', 'password');
-            $(`#${fieldId} i`).addClass( "fa-eye-slash" );
-            $(`#${fieldId} i`).removeClass( "fa-eye" );
+            input.setAttribute('type', 'password');
+            icon.classList.add("fa-eye-slash");
+            icon.classList.remove("fa-eye");
         }
-        else if($(`#${fieldId} input`).attr("type") === "password")
+        else if (input.getAttribute("type") === "password")
         {
-            $(`#${fieldId} input`).attr('type', 'text');
-            $(`#${fieldId} i`).removeClass( "fa-eye-slash" );
-            $(`#${fieldId} i`).addClass( "fa-eye" );
+            input.setAttribute('type', 'text');
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
         }
     });
 

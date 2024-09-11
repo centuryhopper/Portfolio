@@ -1,0 +1,101 @@
+@page "/contact-list"
+@attribute [Authorize(Roles="Admin")]
+@implements IDisposable
+
+<div class="text-center">
+    <h3>Contact List</h3>
+    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo("contact", true))">Back to Contact Form</button>
+
+</div>
+
+@if (Contacts == null || !Contacts.Any())
+{
+    @if (!timerIsDone)
+    {
+        <div class="d-flex justify-content-center">
+            <div id="loadingIndicator" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p>No contacts available.</p>
+    }
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Subject</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Contacts)
+            {
+                <tr>
+                    <td>@contact.Name</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.Subject</td>
+                    @* 
+                    overflow-wrap: break-word;: Ensures that long words break to the next line if necessary.
+                    hyphens: auto;: Adds hyphens at appropriate places in the text to break words naturally.
+                    max-width: 400px;: Restricts the width of the message column to ensure text wraps properly.
+                     *@
+                    <td style="word-wrap: break-word; hyphens: auto; max-width: 400px;">@contact.Message</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private HttpClient httpClient;
+    private IEnumerable<ContactMeDTO> Contacts;
+
+    private const int ALLOWED_LOAD_TIME = 10;
+    private int allowedLoadTimeSeconds = 10; // load time in seconds
+    private Timer loadTimer;
+    private bool timerIsDone = false;
+
+    private void StartTimer()
+    {
+        timerIsDone = false;
+        loadTimer = new Timer(1000); // Set the interval to 1 second
+        loadTimer.Elapsed += OnTimerElapsed;
+        loadTimer.Start();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StartTimer();
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        Contacts = await httpClient.GetFromJsonAsync<IEnumerable<ContactMeDTO>>("api/Contacts/get-contacts");
+    }
+
+    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        allowedLoadTimeSeconds--;
+
+        if (allowedLoadTimeSeconds == 0)
+        {
+            loadTimer.Stop();
+            loadTimer.Dispose();
+            timerIsDone = false;
+            allowedLoadTimeSeconds = ALLOWED_LOAD_TIME; // Reset cooldown for next submission
+        }
+
+        InvokeAsync(StateHasChanged); // Refresh the UI
+    }
+
+    // Dispose timer when component is disposed
+    public void Dispose()
+    {
+        loadTimer?.Dispose();
+    }
+}

@@ -14,7 +14,7 @@ public class ContactMeDTO
     [Required, StringLength(32)]
     public string? Subject { get; set; }
 
-    [Required, StringLength(2048), MinLength(25, ErrorMessage = "Minimum length is 100 characters"), MaxLength(2048, ErrorMessage = "Maximum length is 2048 characters")]
+    [Required, StringLength(2048), MinLength(25, ErrorMessage = "Minimum length is 25 characters"), MaxLength(2048, ErrorMessage = "Maximum length is 2048 characters")]
     public string? Message { get; set; }
 
     public override string ToString()

@@ -20,16 +20,14 @@ public class ContactsController : ControllerBase
         logger = Logger;
     }
 
-    [HttpGet]
-    [Route("get-contacts")]
+    [HttpGet("get-contacts")]
     public async Task<IActionResult> GetAsync()
     {
         var contacts = await contactRepo.GetContactsAsync();
         return Ok(contacts);
     }
 
-    [HttpPost]
-    [Route("post-contact")]
+    [HttpPost("post-contact")]
     public async Task<IActionResult> PostAsync([FromBody] ContactMeDTO model)
     {
         /*

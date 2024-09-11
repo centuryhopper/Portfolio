@@ -9,16 +9,16 @@ namespace DataAccess.Repositories;
 
 public class ContactsDataRepository : IContactsDataRepository<ContactMeDTO>
 {
-    private readonly PortfolioDBContext neondbContext;
+    private readonly PortfolioDBContext portfolioDBContext;
 
-    public ContactsDataRepository(PortfolioDBContext neondbContext)
+    public ContactsDataRepository(PortfolioDBContext portfolioDBContext)
     {
-        this.neondbContext = neondbContext;
+        this.portfolioDBContext = portfolioDBContext;
     }
 
     public async Task<IEnumerable<ContactMeDTO>> GetContactsAsync()
     {
-        var contacts = await neondbContext.Contacttables.AsNoTracking().ToListAsync();
+        var contacts = await portfolioDBContext.Contacttables.AsNoTracking().ToListAsync();
         return contacts.Select(c => new ContactMeDTO
         {
             Name = c.Name,
@@ -32,24 +32,21 @@ public class ContactsDataRepository : IContactsDataRepository<ContactMeDTO>
     {
         var contactTable = new Contacttable
         {
-            Name = model.Name!
-                ,
-            Email = model.Email!
-                ,
-            Subject = model.Subject!
-                ,
+            Name = model.Name!,
+            Email = model.Email!,
+            Subject = model.Subject!,
             Message = model.Message!
         };
 
         try
         {
-            await neondbContext.Contacttables.AddAsync(contactTable);
-            await neondbContext.SaveChangesAsync();
-            return new GeneralResponse(Flag: true, Message: "Added user's message");
+            await portfolioDBContext.Contacttables.AddAsync(contactTable);
+            await portfolioDBContext.SaveChangesAsync();
+            return new GeneralResponse(Flag: true, Message: "Thank you! Your message has been sent.");
         }
-        catch (Exception _)
+        catch (Exception ex)
         {
-            return new GeneralResponse(Flag: false, Message: "Error adding user's message");
+            return new GeneralResponse(Flag: false, Message: ex.Message);
         }
     }
 

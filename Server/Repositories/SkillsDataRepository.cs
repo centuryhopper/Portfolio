@@ -9,11 +9,11 @@ namespace DataAccess.Repositories;
 
 public class SkillsDataRepository : ISkillsDataRepository<SkillDTO>
 {
-    private readonly PortfolioDBContext neondbContext;
+    private readonly PortfolioDBContext portfolioDBContext;
 
-    public SkillsDataRepository(PortfolioDBContext neondbContext)
+    public SkillsDataRepository(PortfolioDBContext portfolioDBContext)
     {
-        this.neondbContext = neondbContext;
+        this.portfolioDBContext = portfolioDBContext;
     }
 
     public async Task<GeneralResponse> AddSkillsAsync(SkillDTO model)
@@ -25,10 +25,10 @@ public class SkillsDataRepository : ISkillsDataRepository<SkillDTO>
 
         try
         {
-            await neondbContext.Skills.AddAsync(SkillDTO);
-            await neondbContext.SaveChangesAsync();
+            await portfolioDBContext.Skills.AddAsync(SkillDTO);
+            await portfolioDBContext.SaveChangesAsync();
 
-            int mostRecentInsertedSkillDTO = await neondbContext.Skills.MaxAsync(skill => skill.Id);
+            int mostRecentInsertedSkillDTO = await portfolioDBContext.Skills.MaxAsync(skill => skill.Id);
 
             var skillDescriptions = model.Descriptions.Select(desc => new SkillDescription
             {
@@ -36,20 +36,20 @@ public class SkillsDataRepository : ISkillsDataRepository<SkillDTO>
                 Description = desc,
             });
 
-            await neondbContext.SkillDescriptions.AddRangeAsync(skillDescriptions);
-            await neondbContext.SaveChangesAsync();
+            await portfolioDBContext.SkillDescriptions.AddRangeAsync(skillDescriptions);
+            await portfolioDBContext.SaveChangesAsync();
 
             return new GeneralResponse(Flag: true, Message: "Added skills and models");
         }
-        catch (Exception _)
+        catch (Exception ex)
         {
-            return new GeneralResponse(Flag: false, Message: "Error adding skills and/or skill decriptions");
+            return new GeneralResponse(Flag: false, Message: ex.Message);
         }
     }
 
     public async Task<IEnumerable<SkillDTO>> GetDataAsync()
     {
-        var skills = await neondbContext.Skills.Include(skill => skill.SkillDescriptions).Select(
+        var skills = await portfolioDBContext.Skills.Include(skill => skill.SkillDescriptions).Select(
             skill =>
             new SkillDTO
             {

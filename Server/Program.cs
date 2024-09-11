@@ -1,4 +1,6 @@
+global using Microsoft.AspNetCore.Authorization;
 using System.Text;
+using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ using Server.Entities;
 using Server.Repositories;
 using Shared.Models;
 using Swashbuckle.AspNetCore.Filters;
+
 
 // MUST HAVE IT LIKE THIS FOR NLOG TO RECOGNIZE DOTNET USER-SECRETS INSTEAD OF HARDCODED DELIMIT PLACEHOLDER VALUE FROM APPSETTINGS.JSON
 
@@ -69,6 +72,9 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
     builder.Services.AddScoped<IBlogsDataRepository<BlogDTO>, BlogsDataRepository>();
+    builder.Services.AddScoped<IContactsDataRepository<ContactMeDTO>, ContactsDataRepository>();
+    builder.Services.AddScoped<IProjectsDataRepository<ProjectCardDTO>, ProjectsDataRepository>();
+    builder.Services.AddScoped<ISkillsDataRepository<SkillDTO>, SkillsDataRepository>();
 
     // Configure the Identity database context
     builder.Services.AddDbContext<ApplicationDbContext>(options =>

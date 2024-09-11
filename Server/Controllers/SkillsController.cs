@@ -18,8 +18,7 @@ public class SkillsController : ControllerBase
         this.SkillRepo = SkillRepo;
     }
 
-    [HttpGet]
-    [Route("get-skills")]
+    [HttpGet("get-skills")]
     public async Task<IActionResult> GetAsync()
     {
         var data = await SkillRepo.GetDataAsync();
@@ -27,8 +26,7 @@ public class SkillsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpPost]
-    [Route("post-skill")]
+    [HttpPost("post-skill")]
     public async Task<IActionResult> AddAsync([FromBody] SkillDTO model)
     {
         var data = await SkillRepo.AddSkillsAsync(model);

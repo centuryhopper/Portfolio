@@ -1,8 +1,5 @@
 @page "/projects"
 
-@using Newtonsoft.Json
-@inject HttpClient httpClient
-
 <div class="container">
     <div class="row pt-5">
         <div class="text-center col-12">
@@ -19,9 +16,11 @@
     <div class="row g-3">
         @if (ProjectList is null || !ProjectList.Any())
         {
-            @* <p>No results found from your search query :(</p> *@
-            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
-            Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+            <div class="d-flex justify-content-center">
+                <div id="loadingIndicator" class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
         }
         else
         {
@@ -50,24 +49,15 @@
 
 
 @code {
-    // https://leopasswordmanager-production.up.railway.app/Account/Login
-    protected IEnumerable<ProjectCardDTO>? ProjectList { get; set; }
-    protected string? SearchTerm { get; set; }
+    private IEnumerable<ProjectCardDTO>? ProjectList { get; set; }
+    private string? SearchTerm { get; set; }
+    private HttpClient httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        // TODO: later on will use repository pattern and dapper context from database
-        //var client = httpClientFactory.CreateClient("API");
-        var response = await
-        httpClient.GetAsync("");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var dto = await response.Content.ReadFromJsonAsync<IEnumerable<ProjectCardDTO>>();
-
-            ProjectList = dto;
-        }
-
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        ProjectList = await
+        httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>("api/Projects/get-projects");
     }
 
     protected void HandleSearchFilter(ChangeEventArgs e)

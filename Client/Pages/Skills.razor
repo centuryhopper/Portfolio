@@ -1,12 +1,12 @@
 @page "/skills"
-@inject HttpClient httpClient
-
 
 @if (SkillsLst is null || !SkillsLst.Any())
 {
-    @* <div>No skills to show :/</div> *@
-    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false"
-    Mode="ProgressBarMode.Indeterminate" JustifyContent="JustifyContent.Center" />
+    <div class="d-flex justify-content-center">
+        <div id="loadingIndicator" class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {
@@ -15,7 +15,7 @@ else
 
         <h2>@skill.Title</h2>
         <ul>
-    @foreach (var desc in skill.Descriptions)
+            @foreach (var desc in skill.Descriptions)
             {
                 <li>
                     @desc
@@ -32,18 +32,13 @@ else
 
 
 @code {
-
     private IEnumerable<SkillDTO>? SkillsLst { get; set; }
+    private HttpClient httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await
-        httpClient.GetAsync("");
-
-        if (response.IsSuccessStatusCode)
-        {
-            //var dto = await response.Content.ReadFromJsonAsync<IEnumerable<SkillDTO>>();
-            //SkillsLst = dto;
-        }
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        SkillsLst = await
+        httpClient.GetFromJsonAsync<IEnumerable<SkillDTO>>("api/Skills/get-skills");
     }
 }

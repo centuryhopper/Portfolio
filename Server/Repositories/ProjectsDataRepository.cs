@@ -9,11 +9,11 @@ namespace DataAccess.Repositories;
 
 public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
 {
-    private readonly PortfolioDBContext neondbContext;
+    private readonly PortfolioDBContext portfolioDBContext;
 
-    public ProjectsDataRepository(PortfolioDBContext neondbContext)
+    public ProjectsDataRepository(PortfolioDBContext portfolioDBContext)
     {
-        this.neondbContext = neondbContext;
+        this.portfolioDBContext = portfolioDBContext;
     }
 
     public async Task<GeneralResponse> AddProjectAsync(ProjectCardDTO model)
@@ -29,8 +29,8 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
 
         try
         {
-            await neondbContext.ProjectCards.AddAsync(projectCard);
-            await neondbContext.SaveChangesAsync();
+            await portfolioDBContext.ProjectCards.AddAsync(projectCard);
+            await portfolioDBContext.SaveChangesAsync();
             return new GeneralResponse(Flag: true, Message: "Added user's message");
         }
         catch (Exception _)
@@ -45,11 +45,11 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            projectCards = await neondbContext.ProjectCards.Where(p => p.Title == searchTerm).AsNoTracking().ToListAsync();
+            projectCards = await portfolioDBContext.ProjectCards.Where(p => p.Title == searchTerm).AsNoTracking().ToListAsync();
         }
         else
         {
-            projectCards = await neondbContext.ProjectCards.AsNoTracking().ToListAsync();
+            projectCards = await portfolioDBContext.ProjectCards.AsNoTracking().ToListAsync();
         }
 
         return projectCards.Select(c => new ProjectCardDTO

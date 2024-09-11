@@ -1,7 +1,7 @@
 @page "/login"
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAccountService accountService
-@inject NavigationManager NavigationManager
+@* @inject NavigationManager NavigationManager *@
 @inject IHttpClientFactory httpClientFactory
 
 <h3>Login</h3>
@@ -23,7 +23,7 @@
             <div class="input-group-append">
                 <div class="input-group-addon">
                     <span class="input-group-text">
-                        <a @onclick="TogglePasswordVisibility" style="color: black; cursor: pointer;"><i
+                        <a @onkeypress="TogglePasswordVisibility" @onkeypress:preventDefault="true" style="color: black; cursor: pointer;" tabindex="0"><i
                                 class="fa @iconClass field-icon m-1" aria-hidden="true"></i></a>
                     </span>
                 </div>
@@ -66,14 +66,18 @@
     private bool Loading = false;
 
 
-    private void TogglePasswordVisibility()
+    private async Task TogglePasswordVisibility(KeyboardEventArgs e)
     {
-        isPasswordVisible = !isPasswordVisible;
+        // Check if the pressed key is either "Space" or "Enter"
+        if (e.Key == " " || e.Key == "Enter")
+        {
+            // Toggle the password visibility
+            isPasswordVisible = !isPasswordVisible;
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        //await jsRuntime.InvokeVoidAsync("showHidePasswordField", "show_hide_password");
         //HttpClient httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
         //await httpClient.GetAsync("api/Account/nlog-test");
     }
@@ -86,7 +90,7 @@
 
         if (!response.Flag)
         {
-            notificationModal.Show("Error", response.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", response.Message, ModalType.ERROR);
             return;
         }
 

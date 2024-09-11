@@ -1,13 +1,15 @@
 @page "/contact"
-
-@using System.Timers
-@inject HttpClient httpClient
-
+@implements IDisposable
 
 
 <h1 class="text-center">Contact Me</h1>
 
 <div class="text-center">
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <a class="btn btn-secondary" href="contact-list">View Contacts</a>
+        </Authorized>
+    </AuthorizeView>
     <p>
         I am excited to meet and work with you! We progress better together so please don't hesitate to contact me using
         the form below.
@@ -55,17 +57,6 @@
     <p class="text-bg-warning">Please wait @cooldownSeconds seconds before submitting again.</p>
 }
 
-@*
-
-github A-records
-
-185.199.108.153
-185.199.109.153
-185.199.110.153
-185.199.111.153
-
-*@
-
 <NotificationModal @ref="notificationModal" />
 
 @code {
@@ -77,6 +68,13 @@ github A-records
     private const int COOL_DOWN_TIME = 30;
     private int cooldownSeconds = COOL_DOWN_TIME; // Cooldown in seconds
     private Timer cooldownTimer;
+    private HttpClient httpClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+    }
+
 
     private void StartCooldownTimer()
     {
@@ -108,8 +106,7 @@ github A-records
 
     protected async Task HandlePostContact()
     {
-        //System.Console.WriteLine($"posting model: {Model}");
-
+        // System.Console.WriteLine($"posting model: {Model}");
         if (isCooldown)
         {
             return;
@@ -121,20 +118,19 @@ github A-records
         // Start the cooldown timer
         StartCooldownTimer();
 
-        var response = await
-        httpClient.PostAsJsonAsync($"", Model);
+        var response = await httpClient.PostAsJsonAsync($"api/Contacts/post-contact", Model);
+        var result = await response.Content.ReadFromJsonAsync<GeneralResponse>();
 
         if (response.IsSuccessStatusCode)
         {
-            //Console.WriteLine(response.Content.ReadAsStringAsync());
+            // Console.WriteLine(response.Content.ReadAsStringAsync());
             Model = new();
-
-            notificationModal.Show("Success", "Thank you! Your message has been sent!", ModalType.SUCCESS);
+            await notificationModal.ShowAsync("Success", result.Message, ModalType.SUCCESS);
         }
         else
         {
             Console.WriteLine("failed");
-            notificationModal.Show("Error", "Couldn't process your message", ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", result.Message, ModalType.ERROR);
         }
     }
 }

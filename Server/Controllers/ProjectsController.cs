@@ -18,8 +18,7 @@ public class ProjectsController : ControllerBase
         this.ProjectRepo = ProjectRepo;
     }
 
-    [HttpGet]
-    [Route("get-projects")]
+    [HttpGet("get-projects")]
     public async Task<IActionResult> GetAsync()
     {
         var data = await ProjectRepo.GetDataAsync("");

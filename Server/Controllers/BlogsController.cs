@@ -31,6 +31,7 @@ public class BlogsController : ControllerBase
     }
 
     [HttpDelete("delete-blogs/{blogId:int}")]
+    [Authorize(Roles="Admin")]
     public async Task<IActionResult> DeleteAsync(int blogId)
     {
         var response = await BlogDataRepo.DeleteBlogAsync(blogId: blogId);
@@ -60,8 +61,8 @@ public class BlogsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpPost]
-    [Route("post-blog")]
+    [HttpPost("post-blog")]
+    [Authorize(Roles="Admin")]
     public async Task<IActionResult> PostBlogAsync([FromBody] BlogDTO BlogDTO)
     {
         /*

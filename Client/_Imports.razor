@@ -10,6 +10,7 @@
 @using Client.Utils
 @using BlazorBootstrap
 @using Blazored.LocalStorage
+@using Blazored.SessionStorage
 @using Microsoft.JSInterop
 @using Client
 @using Client.Providers
@@ -20,6 +21,7 @@
 @using System.Security.Claims
 @using static Shared.Models.ServiceResponses
 @using ModalType = Client.Utils.ModalType
+@using System.Timers
 
 
 
@@ -27,5 +29,6 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILocalStorageService localStorageService
 @inject IHttpClientFactory httpClientFactory
-
+@inject NavigationManager NavigationManager
+@inject ISessionStorageService sessionStorageService
 

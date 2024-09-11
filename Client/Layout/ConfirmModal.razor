@@ -5,6 +5,18 @@
     [Parameter] public string Title { get; set; } = "Confirmation";
     [Parameter] public string BodyText { get; set; } = "Are you sure?";
 
+    private ElementReference myButton;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)  
+    {
+        if (isVisible && myButton.Context is not null)
+        {
+            //Console.WriteLine("focusing!");
+            // auto focus the cancel button
+            await jsRuntime.InvokeVoidAsync("blazorFocusElement", myButton);
+        }
+    }
+
     public Task<bool> ShowAsync()
     {
         isVisible = true;
@@ -31,20 +43,20 @@
 @if (isVisible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="display: block; background: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@Title</h5>
-                <button type="button" class="btn-close" @onclick="Cancel"></button>
-            </div>
-            <div class="modal-body">
-                <p>@BodyText</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-                <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="Cancel"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@BodyText</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel" @ref="myButton">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 }

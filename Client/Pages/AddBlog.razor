@@ -1,6 +1,6 @@
 @page "/addblog"
 @using System.Text
-@inject NavigationManager Navigation
+@attribute [Authorize(Roles="Admin")]
 
 <h3>Add Blog</h3>
 
@@ -108,14 +108,14 @@
 
     private void BackToBlogs()
     {
-        Navigation.NavigateTo("blogs", true);
+        NavigationManager.NavigateTo("blogs", true);
     }
 
-    private void AddVideos()
+    private async Task AddVideos()
     {
         if (NumVideos > 5 || VideoUrls.Count == 5)
         {
-            notificationModal.Show("Error", "Please enter in no more than 5 videos per blog", ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", "Please enter in no more than 5 videos per blog", ModalType.ERROR);
         }
         for (int i = 0; i < NumVideos; i++)
         {
@@ -130,6 +130,7 @@
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
 
+        BlogDTO.Date = DateTime.Now;
         BlogDTO.VideoUrls = VideoUrls.Select(url => new VideoUrlDTO { url = url}).ToList(); // Assign VideoUrls to the model
         BlogDTO.BlogImageDTOs = uploadedImages.Select(image => new BlogImageDTO
         {
@@ -138,21 +139,18 @@
         }).ToList();
         
         // make api call
-
         var response = await httpClient.PostAsJsonAsync("api/Blogs/post-blog", BlogDTO);
 
         var data = await response.Content.ReadFromJsonAsync<GeneralResponse>();
         if (!data.Flag)
         {
-            notificationModal.Show("Error", data.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", data.Message, ModalType.ERROR);
         }
 
-        notificationModal.Show("Success", data.Message, ModalType.SUCCESS);
+        await notificationModal.ShowAsync("Success", data.Message, ModalType.SUCCESS);
 
-        // wait three seconds before navigating back to blogs
-        await Task.Delay(3000);
 
         // Redirect or handle form submission as needed
-        Navigation.NavigateTo("blogs", true);
+        NavigationManager.NavigateTo("blogs", true);
     }
 }
