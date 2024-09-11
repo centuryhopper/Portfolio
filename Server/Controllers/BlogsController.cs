@@ -1,9 +1,10 @@
 
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Server.Repositories;
 using Shared.Models;
 
-namespace Portfolio.Presentation.Server.Controllers;
+namespace Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -24,6 +25,8 @@ public class BlogsController : ControllerBase
     {
         // logger.LogWarning("getting blogs");
         var data = await BlogDataRepo.GetBlogDataAsync();
+        //logger.LogWarning(JsonConvert.SerializeObject(data));
+
 
         return Ok(data);
     }
@@ -46,7 +49,8 @@ public class BlogsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpPost("post-blog")]
+    [HttpPost]
+    [Route("post-blog")]
     public async Task<IActionResult> PostBlogAsync([FromBody] BlogDTO BlogDTO)
     {
         /*
@@ -58,13 +62,26 @@ public class BlogsController : ControllerBase
             "routeName": "string",
             "videoUrls": [
                 {
-                "url": "string",
-                "title": "string"
+                    "url": "string"
+                }
+            ],
+            "blogImageDTOs": [
+                {
+                    "imageData": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4",
+                    "contentType": "image/jpeg"
                 }
             ],
             "fullDesc": "string"
         }
-        
+
+            insert into blog (title, date, preview_desc, route_name, full_desc) values(
+                'dummy',
+                '2019-01-06T17:16:40',
+                'dummy',
+                'dummy',
+                'dummy'
+            );
+                    
         */
         var data = await BlogDataRepo.AddBlogAsync(BlogDTO);
 

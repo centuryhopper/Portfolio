@@ -32,6 +32,7 @@ builder.Services.AddScoped(
     sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(Constants.HTTP_CLIENT)
 );
 
+
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 
 

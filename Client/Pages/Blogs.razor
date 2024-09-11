@@ -26,12 +26,12 @@ else
     @foreach (var blog in BlogCards)
     {
         <div class="card mx-auto mt-3 w-75">
-    <div class="card-body">
-        <a href="@($"blogcard/{blog.Title}")">@blog.Title</a>
-        <h5 class="card-title">@blog.Date.ToString("MM-dd-yyyy")</h5>
-        <p class="card-text">@blog.PreviewDesc</p>
-    </div>
-</div>
+            <div class="card-body">
+                <a href="@($"blogcard/{blog.Title}")">@blog.Title</a>
+                <h5 class="card-title">@blog.Date.GetValueOrDefault().ToString("MM-dd-yyyy")</h5>
+                <p class="card-text">@blog.PreviewDesc</p>
+            </div>
+        </div>
     }
 }
 

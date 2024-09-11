@@ -18,6 +18,8 @@ public partial class PortfolioDBContext : DbContext
 
     public virtual DbSet<Blog> Blogs { get; set; }
 
+    public virtual DbSet<Blogimage> Blogimages { get; set; }
+
     public virtual DbSet<Contacttable> Contacttables { get; set; }
 
     public virtual DbSet<ProjectCard> ProjectCards { get; set; }
@@ -48,6 +50,29 @@ public partial class PortfolioDBContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");
+        });
+
+        modelBuilder.Entity<Blogimage>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("blogimages_pkey");
+
+            entity.ToTable("blogimages");
+
+            entity.Property(e => e.ImageId).HasColumnName("image_id");
+            entity.Property(e => e.BlogId).HasColumnName("blog_id");
+            entity.Property(e => e.ContentType)
+                .HasMaxLength(50)
+                .HasColumnName("content_type");
+            entity.Property(e => e.ImageData).HasColumnName("image_data");
+            entity.Property(e => e.UploadDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("upload_date");
+
+            entity.HasOne(d => d.Blog).WithMany(p => p.Blogimages)
+                .HasForeignKey(d => d.BlogId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("blogimages_blog_id_fkey");
         });
 
         modelBuilder.Entity<Contacttable>(entity =>

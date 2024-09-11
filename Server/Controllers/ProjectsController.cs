@@ -4,7 +4,7 @@ using Shared.Models;
 
 
 
-namespace Portfolio.Presentation.Server.Controllers;
+namespace Server.Controllers;
 
 
 [Route("api/[controller]")]

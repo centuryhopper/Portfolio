@@ -1,4 +1,5 @@
 @page "/addblog"
+@using System.Text
 @inject NavigationManager Navigation
 
 <h3>Add Blog</h3>
@@ -7,56 +8,102 @@
     <button class="btn btn-primary" @onclick="BackToBlogs">Back to Blogs</button>
 </div>
 
-<EditForm Model="BlogDTO" OnValidSubmit="SubmitBlog">
+<EditForm Model="@BlogDTO" OnValidSubmit="SubmitBlog">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="m-3">
-        <label>Title</label>
-        <InputText class="form-control" @bind-Value="BlogDTO.Title" />
+    <div class="form-group">
+        <label for="Title">Title</label>
+        <InputText id="Title" @bind-Value="BlogDTO.Title" class="form-control" />
+        <ValidationMessage For="@(() => BlogDTO.Title)" />
     </div>
 
-    <div class="m-3">
-        <label>Date</label>
-        <InputDate @bind-Value="BlogDTO.Date" class="form-control" />
+    <div class="form-group">
+        <label for="FullDesc">Description</label>
+        <InputTextArea id="FullDesc" @bind-Value="BlogDTO.FullDesc" class="form-control" />
+        <ValidationMessage For="@(() => BlogDTO.FullDesc)" />
     </div>
 
-    <div class="m-3">
-        <label>Description</label>
-        <InputTextArea class="form-control" @bind-Value="BlogDTO.FullDesc" rows="10" />
+    <div class="form-group">
+        <label for="Images">Upload Images</label>
+        <InputFile OnChange="HandleFilesSelected" multiple accept="image/*" />
     </div>
 
-    <div id="videoUrls">
-        @for (int i = 0; i < VideoUrls.Count; i++)
+    <div class="form-group">
+        @if (imagePreviews?.Any() == true)
         {
-            <div class="m-3">
-                <label>Video URL @i</label>
-                <InputText class="form-control" @bind-Value="VideoUrls[i]" />
-            </div>
+            foreach (var imageUrl in imagePreviews)
+            {
+                <img src="@imageUrl" alt="Image preview" style="max-width: 200px; margin-top: 10px;" />
+            }
         }
     </div>
+
+    <div class="m-3">
+        <input class="form-control" type="number" max="5" min="0" placeholder="Enter number of videos you want to add" 
+               @bind="NumVideos" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+        <input type="button" class="btn btn-secondary m-3" value="Add Videos" @onclick="AddVideos">
+    </div>
+
+    @if (VideoUrls.Count > 0)
+    {
+        @for (int i = 0; i < VideoUrls.Count; i++)
+        {
+            var index = i;
+            <div class="m-3 row">
+                <div class="col">
+                    <label>Video URL @(index+1)</label>
+                    <input class="form-control" type="text" @bind="VideoUrls[index]" placeholder="Enter video URL" />
+                </div>
+                <div class="col">
+                    <input type="button" class="btn btn-danger" @onclick="() => RemoveVideo(index)" value="Remove">
+                </div>
+            </div>
+        }
+    }
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </EditForm>
 
-<div class="m-3">
-    <input class="form-control" type="number" placeholder="Enter number of videos you want to add" @bind="NumVideos">
-    <button class="btn btn-secondary m-2" @onclick="AddVideos">Add Videos</button>
-</div>
+
 
 <NotificationModal @ref="notificationModal" />
 
 
 @code {
     private NotificationModal notificationModal = default!;
-    private BlogDTO BlogDTO = new();
+    protected BlogDTO BlogDTO = new();
     private List<string> VideoUrls = new();
     private int NumVideos { get; set; }
     private HttpClient httpClient;
+    private List<byte[]> uploadedImages = new(); // To store images as byte arrays
+    private List<string> imagePreviews = new();  // To show image previews as base64 strings
 
     protected override void OnInitialized()
     {
-        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+    }
+
+    private void RemoveVideo(int idx)
+    {
+        //Console.WriteLine(idx);
+        //Console.WriteLine(VideoUrls.Count);
+        //VideoUrls.ForEach(v=>Console.WriteLine(v));
+        VideoUrls.RemoveAt(idx);
+    }
+
+    private async Task HandleFilesSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            var buffer = new byte[file.Size];
+            await file.OpenReadStream().ReadAsync(buffer);
+            uploadedImages.Add(buffer);
+
+            // Convert to base64 for preview
+            var base64String = Convert.ToBase64String(buffer);
+            var imagePreviewUrl = $"data:{file.ContentType};base64,{base64String}";
+            imagePreviews.Add(imagePreviewUrl);
+        }
     }
 
     private void BackToBlogs()
@@ -66,18 +113,34 @@
 
     private void AddVideos()
     {
+        if (NumVideos > 5 || VideoUrls.Count == 5)
+        {
+            notificationModal.Show("Error", "Please enter in no more than 5 videos per blog", ModalType.ERROR);
+        }
         for (int i = 0; i < NumVideos; i++)
         {
-            VideoUrls.Add(string.Empty); // Adds empty strings for each new video URL input
+            VideoUrls.Add(string.Empty); // Add empty placeholders for each video URL
         }
+
+        NumVideos = 0;
+
     }
 
     private async Task SubmitBlog()
     {
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+
         BlogDTO.VideoUrls = VideoUrls.Select(url => new VideoUrlDTO { url = url}).ToList(); // Assign VideoUrls to the model
+        BlogDTO.BlogImageDTOs = uploadedImages.Select(image => new BlogImageDTO
+        {
+            ImageData = image,
+            ContentType = "image/jpeg" // Or detect the content type dynamically if needed
+        }).ToList();
         
         // make api call
+
         var response = await httpClient.PostAsJsonAsync("api/Blogs/post-blog", BlogDTO);
+
         var data = await response.Content.ReadFromJsonAsync<GeneralResponse>();
         if (!data.Flag)
         {
