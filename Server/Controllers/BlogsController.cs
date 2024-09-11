@@ -27,8 +27,19 @@ public class BlogsController : ControllerBase
         var data = await BlogDataRepo.GetBlogDataAsync();
         //logger.LogWarning(JsonConvert.SerializeObject(data));
 
-
         return Ok(data);
+    }
+
+    [HttpDelete("delete-blogs/{blogId:int}")]
+    public async Task<IActionResult> DeleteAsync(int blogId)
+    {
+        var response = await BlogDataRepo.DeleteBlogAsync(blogId: blogId);
+        if (!response.Flag)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
     }
 
     [HttpGet]

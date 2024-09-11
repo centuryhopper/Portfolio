@@ -10,4 +10,5 @@ public interface IBlogsDataRepository<T>
     Task<IEnumerable<T>> GetBlogDataAsync();
     Task<T> GetBlogByTitleAsync(string title);
     Task<GeneralResponse> AddBlogAsync(T model);
+    Task<GeneralResponse> DeleteBlogAsync(int blogId);
 }

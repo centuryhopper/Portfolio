@@ -64,6 +64,27 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
         }
     }
 
+    public async Task<GeneralResponse> DeleteBlogAsync(int blogId)
+    {
+        try
+        {
+            var blog = await portfolioDbContext.Blogs.FindAsync(blogId);
+            if (blog == null)
+            {
+                throw new Exception("blog not found");
+            }
+
+            portfolioDbContext.Blogs.Remove(blog);
+            await portfolioDbContext.SaveChangesAsync();
+        }
+        catch (System.Exception ex)
+        {
+            return new GeneralResponse(Flag: false, Message: ex.Message);
+        }
+
+        return new GeneralResponse(Flag: true, Message: "Blog deleted!");
+    }
+
     public async Task<BlogDTO> GetBlogByTitleAsync(string title)
     {
         var blog = await portfolioDbContext.Blogs
