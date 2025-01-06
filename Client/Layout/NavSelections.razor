@@ -1,4 +1,6 @@
-
+@inject IState<BlogPageState> BlogPageState
+@inject IState<LoginButtonState> LoginButtonState
+@implements IDisposable
 
 <li class="nav-item">
     <a class="nav-link" href="">
@@ -36,5 +38,29 @@
         <i class="fa-solid fa-screwdriver-wrench"></i>
         <span class="m-3 nav-text">Skills</span>
     </a>
+    @* <div>@BlogPageState.Value.IsNewest</div>
+    <div>@LoginButtonState.Value.IsLoginButtonVisible</div> *@
 </li>
 
+@code {
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            BlogPageState.StateChanged += StateChanged;
+            LoginButtonState.StateChanged += StateChanged;
+        }
+    }
+
+    public void StateChanged(object sender, EventArgs args)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        BlogPageState.StateChanged -= StateChanged;
+        LoginButtonState.StateChanged -= StateChanged;
+    }
+}

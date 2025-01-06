@@ -42,8 +42,13 @@ else
             {
                 var base64String = Convert.ToBase64String(image.ImageData);
                 var imageUrl = $"data:{image.ContentType};base64,{base64String}";
-                <img src="@imageUrl" alt="Blog Image" style="max-width: 300px; margin-top: 10px;" />
+                @* <img src="@imageUrl" alt="Blog Image" style="max-width: 300px; margin-top: 10px;" /> *@
             }
+            <Client.Layout.Carousel ImageUrls="@(Model.BlogImageDTOs.Select(bi=> {
+                var base64String = Convert.ToBase64String(bi.ImageData);
+                var imageUrl = $"data:{bi.ContentType};base64,{base64String}";
+                return imageUrl;
+            }).ToArray())"/>
         }
 
         

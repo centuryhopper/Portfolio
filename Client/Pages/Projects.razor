@@ -28,10 +28,10 @@
             {
                 <div class="col-12 col-md-6 col-lg-6 col-sm-6">
                     <div class="card">
-                        <img src="@info.ImgUrl" class="card-img-top" alt="Card Image" />
-                        <div class="card-body">
+                        <img src="@info.ImgUrl" class="card-img-top" alt="Card Image" width="5rem" height="500rem" />
+                        <div class="card-body" style="width: 35rem; height: 15rem; overflow: auto;">
                             <h5 class="card-title text-center">@info.Title</h5>
-                            <p class="card-text mb-4">@info.Description</p>
+                            <p class="card-text mx-auto text-center">@info.Description</p>
                             <div class="text-center">
                                 <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
                                     href="@info.ProjectLink">Link to project
@@ -56,8 +56,7 @@
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
-        ProjectList = await
-        httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>("api/Projects/get-projects");
+        ProjectList = await httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>("api/Projects/get-projects");
     }
 
     protected void HandleSearchFilter(ChangeEventArgs e)

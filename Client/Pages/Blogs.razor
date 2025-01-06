@@ -1,6 +1,6 @@
 @page "/blogs"
 
-@using Newtonsoft.Json
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <div class="text-center m-5">
     <h2><b>All Blogs</b></h2>
@@ -8,7 +8,7 @@
 <hr />
 <div class="m-5">
     <div class="d-flex justify-content-between">
-        <button class="btn btn-primary" @onclick="()=>HandleSort()">Sort by @(IsNewest ? "Oldest" : "Newest")</button>
+        <button class="btn btn-primary" @onclick="()=>HandleSort()">Sort by @(BlogPageState.Value.IsNewest ? "Oldest" : "Newest")</button>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <a class="btn btn-secondary" href="addblog">Add Blog</a>
@@ -49,81 +49,3 @@ else
 <NotificationModal @ref="notificationModal" />
 <ConfirmModal @ref="confirmModal" BodyText="Are you sure you want to delete this blog" />
 
-@code {
-    private NotificationModal notificationModal = default!;
-    private ConfirmModal confirmModal = default!;
-    protected IEnumerable<BlogDTO>? BlogCards;
-    protected bool IsNewest;
-
-    private HttpClient httpClient;
-
-    protected override async Task OnInitializedAsync()
-    {
-        // Load sorting preference from session storage
-        IsNewest = await sessionStorageService.GetItemAsync<bool>(nameof(IsNewest));
-
-        // Initialize the HttpClient
-        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
-
-        // Fetch blogs from API
-        await LoadBlogs();
-    }
-
-    private async Task LoadBlogs()
-    {
-        var response = await httpClient.GetAsync("api/Blogs/get-blogs");
-
-        if (response.IsSuccessStatusCode)
-        {
-            BlogCards = await response.Content.ReadFromJsonAsync<IEnumerable<BlogDTO>>();
-
-            // Apply the sorting based on the saved state
-            ApplySorting();
-        }
-    }
-
-    private void ApplySorting()
-    {
-        if (IsNewest)
-        {
-            BlogCards = BlogCards?.OrderByDescending(x => x.Date);
-        }
-        else
-        {
-            BlogCards = BlogCards?.OrderBy(x => x.Date);
-        }
-    }
-
-    private async Task DeleteBlog(int blogId)
-    {
-        var isConfirmed = await confirmModal.ShowAsync();
-        if (!isConfirmed)
-        {
-            Console.WriteLine("Cancelled delete operation");
-            return;
-        }
-
-        var response = await httpClient.DeleteAsync($"api/Blogs/delete-blogs/{blogId}");
-        var result = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-
-        if (!result.Flag)
-        {
-            await notificationModal.ShowAsync("Error", result.Message, ModalType.ERROR);
-        }
-
-        await notificationModal.ShowAsync("Success", result.Message, ModalType.SUCCESS);
-        await LoadBlogs();  // Reload the blogs after deletion
-    }
-
-    private async Task HandleSort()
-    {
-        // Toggle sorting order
-        IsNewest = !IsNewest;
-
-        // Save the new sorting preference
-        await sessionStorageService.SetItemAsync(nameof(IsNewest), IsNewest);
-        
-        // Apply sorting
-        ApplySorting();
-    }
-}

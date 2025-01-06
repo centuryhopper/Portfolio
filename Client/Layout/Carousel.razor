@@ -1,0 +1,68 @@
+@using System.Threading
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="d-flex flex-column  col-5" style="background-color: transparent;">
+        <div class="d-flex justify-content-between align-items-center" style="height: 400px;">
+            <img src="/images/next (5).png" style="transform: rotate(180deg);" @onclick="() => Manually(true)" />
+            <div>
+                <img src="@RenderImage(currentPosition)" alt="carousel image" style="max-width: 300px; margin-top: 10px;" />
+            </div>
+            <img src="/images/next (5).png" @onclick="() => Manually(false)" />
+        </div>
+
+        <div class="d-flex justify-content-center">
+            @foreach (var img in ImageUrls)
+            {
+                if (Math.Abs(currentPosition % ImageUrls.Length) == Array.IndexOf(ImageUrls, img))
+                {
+                    <div class="alert alert-danger border-dark"></div>
+                }
+                else
+                {
+                    <div class="alert alert-info border-dark"></div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string[] ImageUrls { get; set; } // Use image URLs instead of components
+    private int currentPosition;
+    private CancellationTokenSource cts;
+    private CancellationToken ct;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cts = new CancellationTokenSource();
+        ct = cts.Token;
+        Walkthrough();
+    }
+
+    public void Manually(bool backwards)
+    {
+        if (!cts.IsCancellationRequested)
+            cts.Cancel();
+        if (backwards)
+            currentPosition--;
+        else
+            currentPosition++;
+    }
+
+    public string RenderImage(int position)
+    {
+        // Return the image URL at the given position
+        return ImageUrls[Math.Abs(position % ImageUrls.Length)];
+    }
+
+    public async Task Walkthrough()
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            await Task.Delay(2500, ct);
+            currentPosition++;
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+}

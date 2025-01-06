@@ -10,6 +10,7 @@ using Client.Handlers;
 using Client.Utils;
 using Shared.Models;
 using Blazored.SessionStorage;
+using Fluxor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -43,9 +44,10 @@ builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-
 builder.Services.AddScoped<IContactsService<ContactMeDTO>, ContactsService>();
-// builder.Services.AddScoped<IBlo<ContactMeDTO>, ContactsService>();
+
+builder.Services.AddFluxor(options => 
+    options.ScanAssemblies(typeof(Program).Assembly));
 
 
 await builder.Build().RunAsync();

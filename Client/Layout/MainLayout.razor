@@ -1,57 +1,40 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inherits LayoutComponentBase
- 
+
+
+
+@* cant inherit from a fluxor component so we use idisposable pattern in this case *@
+
+
 <div class="wrapper">
     <Header />
     <Navigation>
-        <NavSelections/>
-        @if (loginButtonUnlocked)
+        <NavSelections />
+        @if (LoginButtonIState.Value.IsLoginButtonVisible)
+        @* @if (loginButtonUnlocked) *@
         {
-            <LoginDisplay/>
+            <LoginDisplay />
         }
         else
         {
             <div style="opacity: 0; cursor: pointer;" @onclick="()=>IncrementCount()">just a div</div>
         }
     </Navigation>
- 
+
     <main role="main" class="p-3 pt-lg-0 pt-4">
         @* <div class="container">
-            <p>
-                <AuthorizeView>
-                    <Authorized>
-                        <span class="text-success fw-bold mx-auto">User: @context.User.Identity!.Name</span>
-                    </Authorized>
-                </AuthorizeView>
-            </p>
+        <p>
+        <AuthorizeView>
+        <Authorized>
+        <span class="text-success fw-bold mx-auto">User: @context.User.Identity!.Name</span>
+        </Authorized>
+        </AuthorizeView>
+        </p>
         </div> *@
         @Body
     </main>
- 
+
 </div>
- 
+
 <Footer />
 
-@code {
-    private bool loginButtonUnlocked = false;
-    private int cnt = 0;
-    private bool isAuthenticated;
-    private async Task IncrementCount()
-    {
-        if (loginButtonUnlocked)
-        {
-            return;
-        }
-        cnt++;
-        Console.WriteLine(cnt);
-        loginButtonUnlocked = cnt > 10;
-        await sessionStorageService.SetItemAsync(nameof(loginButtonUnlocked), loginButtonUnlocked);
-    }
-    protected override async Task OnInitializedAsync()
-    {
-        loginButtonUnlocked = await sessionStorageService.GetItemAsync<bool>(nameof(loginButtonUnlocked));
-        var authState = await ((ApiAuthenticationStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync();
-        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-    }
-}
