@@ -19,7 +19,7 @@ using Swashbuckle.AspNetCore.Filters;
 // MUST HAVE IT LIKE THIS FOR NLOG TO RECOGNIZE DOTNET USER-SECRETS INSTEAD OF HARDCODED DELIMIT PLACEHOLDER VALUE FROM APPSETTINGS.JSON
 
 /*
-    dotnet ef dbcontext scaffold "Name=ConnectionStrings:PortfolioDB" Npgsql.EntityFrameworkCore.PostgreSQL -t blog -t contacttable -t project_card -t skill -t skill_description -t video_url -t blogimages -o Entities -c PortfolioDBContext --context-dir Contexts -f
+    dotnet ef dbcontext scaffold "Name=ConnectionStrings:PortfolioDB" Npgsql.EntityFrameworkCore.PostgreSQL -t blog -t contacttable -t project_card -t skill -t skill_description -o Entities -c PortfolioDBContext --context-dir Contexts -f
 
     to test api in swagger:
         run "dotnet watch run" and look at

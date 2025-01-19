@@ -16,8 +16,4 @@ public partial class Blog
     public string? RouteName { get; set; }
 
     public string FullDesc { get; set; } = null!;
-
-    public virtual ICollection<Blogimage> Blogimages { get; set; } = new List<Blogimage>();
-
-    public virtual ICollection<VideoUrl> VideoUrls { get; set; } = new List<VideoUrl>();
 }
