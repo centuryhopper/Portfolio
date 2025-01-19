@@ -7,11 +7,11 @@ using static Shared.Models.ServiceResponses;
 
 namespace Server.Repositories;
 
-public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
+public class BlogsDataTinymceRepository : IBlogsDataRepository<BlogDTO>
 {
     private readonly PortfolioDBContext portfolioDbContext;
 
-    public BlogsDataRepository(PortfolioDBContext portfolioDbContext)
+    public BlogsDataTinymceRepository(PortfolioDBContext portfolioDbContext)
     {
         this.portfolioDbContext = portfolioDbContext;
     }
@@ -21,40 +21,14 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
         var blog = new Blog
         {
             Title = model.Title,
-            Date = model.Date.GetValueOrDefault(),
-            PreviewDesc = $"{model.FullDesc.Substring(0,Math.Min(10,model.FullDesc.Length))}...",
-            RouteName = model.RouteName,
+            Date = model.Date.ToDateTime(TimeOnly.MinValue),
+            PreviewDesc = model.PreviewDesc,
             FullDesc = model.FullDesc,
         };
 
         try
         {
             await portfolioDbContext.Blogs.AddAsync(blog);
-            await portfolioDbContext.SaveChangesAsync();
-
-            int mostRecentInsertedBlogDTO = await portfolioDbContext.Blogs.MaxAsync(b => b.Id);
-
-            foreach (var vUrlModel in model.VideoUrls)
-            {
-                var videoUrl = new VideoUrl
-                {
-                    BlogId = mostRecentInsertedBlogDTO,
-                    Url = vUrlModel.url,
-                };
-                await portfolioDbContext.VideoUrls.AddAsync(videoUrl);
-            }
-
-            foreach (var blogImage in model.BlogImageDTOs)
-            {
-                var obj = new Blogimage
-                {
-                    BlogId = mostRecentInsertedBlogDTO,
-                    ImageData = blogImage.ImageData,
-                    ContentType = blogImage.ContentType,
-                };
-                await portfolioDbContext.Blogimages.AddAsync(obj);
-            }
-
             await portfolioDbContext.SaveChangesAsync();
             return new GeneralResponse(Flag: true, Message: "Added my blogs");
         }
@@ -85,29 +59,54 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
         return new GeneralResponse(Flag: true, Message: "Blog deleted!");
     }
 
+    public async Task<GeneralResponse> EditBlogAsync(BlogDTO model)
+    {
+        try
+        {
+            var blog = await portfolioDbContext.Blogs.FindAsync(model.Id);
+            if (blog is null)
+            {
+                throw new Exception("blog not found in db");
+            }
+
+            blog.Title = model.Title;
+            blog.Date = model.Date.ToDateTime(TimeOnly.MinValue);
+            blog.FullDesc = model.FullDesc;
+            blog.PreviewDesc = model.PreviewDesc;
+
+            await portfolioDbContext.SaveChangesAsync();
+
+            return new GeneralResponse(Flag: true, Message: "Blog updated!");
+        }
+        catch (System.Exception ex)
+        {
+            return new GeneralResponse(Flag: false, Message: ex.Message);
+        }
+    }
+
+    public async Task<BlogDTO> GetBlogById(int blogId)
+    {
+        var blog = await portfolioDbContext.Blogs.FindAsync(blogId);
+        return new BlogDTO
+        {
+            Title = blog!.Title,
+            Date = DateOnly.FromDateTime(blog.Date),
+            PreviewDesc = blog.PreviewDesc,
+            FullDesc = blog.FullDesc,
+            Id = blog.Id,
+        };
+    }
+
     public async Task<BlogDTO> GetBlogByTitleAsync(string title)
     {
         var blog = await portfolioDbContext.Blogs
-        .Include(b => b.VideoUrls)
-        .Include(b => b.Blogimages)
         .Where(b => b.Title == title).FirstAsync();
-
-        // var videoUrls = await portfolioDbContext.VideoUrls.Where(v => v.BlogId == blog.Id).ToListAsync();
 
         return new BlogDTO
         {
             Title = blog.Title,
-            Date = blog.Date,
+            Date = DateOnly.FromDateTime(blog.Date),
             PreviewDesc = blog.PreviewDesc,
-            RouteName = blog.RouteName,
-            VideoUrls = blog.VideoUrls.Select(v => new VideoUrlDTO
-            {
-                url = v.Url
-            }).ToList(),
-            BlogImageDTOs = blog.Blogimages.Select(b => new BlogImageDTO { 
-                ImageData = b.ImageData,
-                ContentType = b.ContentType,
-             }).ToList(),
             FullDesc = blog.FullDesc
         };
     }
@@ -121,25 +120,14 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
         
         */
         var blogs = await portfolioDbContext.Blogs
-        .Include(b => b.VideoUrls)
-        .Include(b => b.Blogimages)
         .Select(b =>
             new BlogDTO
             {
                 Id = b.Id,
                 Title = b.Title,
-                Date = b.Date,
+                Date = DateOnly.FromDateTime(b.Date),
                 PreviewDesc = b.PreviewDesc,
-                RouteName = b.RouteName,
                 FullDesc = b.FullDesc,
-                BlogImageDTOs = b.Blogimages.Select(bi => new BlogImageDTO {
-                    ImageData = bi.ImageData,
-                    ContentType = bi.ContentType,
-                }).ToList(),
-                VideoUrls = b.VideoUrls.Select(v => new VideoUrlDTO
-                {
-                    url = v.Url
-                }).ToList(),
             }).ToListAsync();
 
         return blogs;
@@ -151,14 +139,9 @@ public class BlogsDataRepository : IBlogsDataRepository<BlogDTO>
             new BlogDTO
             {
                 Title = b.Title,
-                Date = b.Date,
+                Date = DateOnly.FromDateTime(b.Date),
                 PreviewDesc = b.PreviewDesc,
-                RouteName = b.RouteName,
                 FullDesc = b.FullDesc,
-                VideoUrls = b.VideoUrls.Select(v => new VideoUrlDTO
-                {
-                    url = v.Url
-                }).ToList(),
             }).ToListAsync();
 
         return isNewest ?

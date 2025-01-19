@@ -71,7 +71,9 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     });
 
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-    builder.Services.AddScoped<IBlogsDataRepository<BlogDTO>, BlogsDataRepository>();
+    // builder.Services.AddScoped<IBlogsDataRepository<BlogDTO>, BlogsDataRepository>();
+    // rich text editor support
+    builder.Services.AddScoped<IBlogsDataRepository<BlogDTO>, BlogsDataTinymceRepository>();
     builder.Services.AddScoped<IContactsDataRepository<ContactMeDTO>, ContactsDataRepository>();
     builder.Services.AddScoped<IProjectsDataRepository<ProjectCardDTO>, ProjectsDataRepository>();
     builder.Services.AddScoped<ISkillsDataRepository<SkillDTO>, SkillsDataRepository>();

@@ -53,15 +53,14 @@ public class BlogsController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-by-title/{title}")]
-    public async Task<IActionResult> GetAsync(string title)
+    [Route("get-blog/{blogId:int}")]
+    public async Task<IActionResult> GetBlogById(int blogId)
     {
-        var data = await BlogDataRepo.GetBlogByTitleAsync(title);
-
+        var data = await BlogDataRepo.GetBlogById(blogId: blogId);
         return Ok(data);
     }
 
-    [HttpPost("post-blog")]
+    [HttpPost("add-blog")]
     [Authorize(Roles="Admin")]
     public async Task<IActionResult> PostBlogAsync([FromBody] BlogDTO BlogDTO)
     {
@@ -96,6 +95,21 @@ public class BlogsController : ControllerBase
                     
         */
         var data = await BlogDataRepo.AddBlogAsync(BlogDTO);
+
+        if (!data.Flag)
+        {
+            return BadRequest(data);
+        }
+
+        return Ok(data);
+    }
+
+
+    [HttpPut("edit-blog")]
+    [Authorize(Roles="Admin")]
+    public async Task<IActionResult> EditBlogAsync([FromBody] BlogDTO BlogDTO)
+    {
+        var data = await BlogDataRepo.EditBlogAsync(BlogDTO);
 
         if (!data.Flag)
         {
