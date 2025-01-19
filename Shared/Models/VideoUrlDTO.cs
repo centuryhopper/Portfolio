@@ -1,13 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Shared.Models;
 
 
 
 public class VideoUrlDTO
 {
-    public string url { get; set; }
+    public int Id { get; set; }
+    public int BlogId { get; set; }
+    [Required]
+    public string Url { get; set; }
 
     public override string ToString()
     {
-        return $"url: {url}";
+        return $"url: {Url}";
     }
 }

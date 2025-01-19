@@ -13,4 +13,4 @@ else
   echo "already removed Models/ from the Server directory"
 fi
 
-/usr/bin/dotnet watch run
+/home/leo_zhang/.dotnet/dotnet watch run

@@ -12,13 +12,17 @@
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Fluxor" Version="6.0.0" />
     <PackageReference Include="Fluxor.Blazor.Web" Version="6.0.0" />
-    <PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.0.0" />    
+    <PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.0.0" />
+    <PackageReference Include="HandyBlazorComponents" Version="1.0.77" />
+    <PackageReference Include="HtmlSanitizer" Version="8.1.870" />    
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.7" />                             
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />                               
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.7" PrivateAssets="all" /> 
     <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="8.0.7" />                                 
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />                                                 
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />                                                          
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />                                                 
+    <PackageReference Include="TinyMCE" Version="7.6.0" />                                                 
+    <PackageReference Include="TinyMCE.Blazor" Version="2.0.0" />                                                          
   </ItemGroup>
 
   <ItemGroup>

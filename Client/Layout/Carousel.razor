@@ -5,12 +5,12 @@
         <div class="d-flex justify-content-between align-items-center" style="height: 400px;">
             <img src="/images/next (5).png" style="transform: rotate(180deg);" @onclick="() => Manually(true)" />
             <div>
-                <img src="@RenderImage(currentPosition)" alt="carousel image" style="max-width: 300px; margin-top: 10px;" />
+                <img src="@RenderImage(currentPosition)" alt="carousel image" style="max-width: 300px; max-height: 300px; margin: 1rem;" />
             </div>
             <img src="/images/next (5).png" @onclick="() => Manually(false)" />
         </div>
 
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center mt-3">
             @foreach (var img in ImageUrls)
             {
                 if (Math.Abs(currentPosition % ImageUrls.Length) == Array.IndexOf(ImageUrls, img))

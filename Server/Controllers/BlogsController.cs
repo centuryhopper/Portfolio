@@ -61,6 +61,7 @@ public class BlogsController : ControllerBase
     }
 
     [HttpPost("add-blog")]
+    [RequestSizeLimit(100_000_000)]
     [Authorize(Roles="Admin")]
     public async Task<IActionResult> PostBlogAsync([FromBody] BlogDTO BlogDTO)
     {

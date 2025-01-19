@@ -1,4 +1,7 @@
 @page "/blogs"
+@using HandyBlazorComponents.Components
+
+@* TODO: add uploading videos and images to add blog and edit blog pages *@
 
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
@@ -11,7 +14,7 @@
         <button class="btn btn-primary" @onclick="()=>HandleSort()">Sort by @(BlogPageState.Value.IsNewest ? "Oldest" : "Newest")</button>
         <AuthorizeView Roles="Admin">
             <Authorized>
-                <a class="btn btn-secondary" href="addblog">Add Blog</a>
+                <button class="btn btn-secondary" @onclick="@(()=>NavigationManager.NavigateTo("addblog", forceLoad: true))">Add Blog</button>
             </Authorized>
         </AuthorizeView>
     </div>
@@ -31,14 +34,15 @@ else
     {
         <div class="card mx-auto mt-3 w-75">
             <div class="card-body">
-                <a href="@($"blogcard/{blog.Title}")">@blog.Title</a>
-                <h5 class="card-title">@blog.Date.GetValueOrDefault().ToString("MM-dd-yyyy")</h5>
+                <a href="@($"blog-details/{blog.Id}")">@blog.Title</a>
+                <h5 class="card-title">@blog.Date.ToString("MM-dd-yyyy")</h5>
                 <p class="card-text">@blog.PreviewDesc</p>
             </div>
             <AuthorizeView Roles="Admin">
                 <Authorized>
                     <div class="card-footer">
                         <button class="btn btn-danger" @onclick="()=>DeleteBlog(blog.Id.GetValueOrDefault())">Delete</button>
+                        <button class="btn btn-info" @onclick="@(()=>NavigationManager.NavigateTo($"edit-blog/{blog.Id.GetValueOrDefault()}", forceLoad: true))">Edit</button>
                     </div>
                 </Authorized>
             </AuthorizeView>

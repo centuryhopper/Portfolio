@@ -1,0 +1,54 @@
+@using TinyMCE.Blazor
+@typeparam TItem where TItem : class, new()
+ 
+@if (!string.IsNullOrWhiteSpace(Label))
+{
+    <div class="m-3 p-3" style="background-color: lightblue;">
+        @Label
+    </div>
+}
+ 
+<Editor ScriptSrc="lib/tinymce/tinymce.min.js" Value="@EditorContent" ValueChanged="@((e) => OnValueChanged(e))"/>
+ 
+<button class="btn btn-primary m-3" @onclick="SaveInfo">Confirm Changes</button>
+ 
+ 
+@code {
+    [Parameter]
+    public string? Label  {get;set;} = null!;
+ 
+    [Parameter]
+    public TItem Item { get; set; } = null!; // The object being edited
+ 
+    [Parameter]
+    public string ColumnName { get; set; } = null!; // The name of the property to bind to
+ 
+    [Parameter]
+    public EventCallback<bool> OnPageDirtyChanged  { get; set; }
+ 
+    [Parameter]
+    public EventCallback<string?> OnEditorSave { get; set; }
+ 
+    private string? EditorContent { get; set; }
+ 
+    protected override void OnInitialized()
+    {
+        EditorContent = GetPropertyValue(Item, ColumnName)?.ToString();
+    }
+ 
+    private async Task OnValueChanged(string? value)
+    {
+        EditorContent = value;
+        await OnPageDirtyChanged.InvokeAsync(true);
+    }
+ 
+    private async Task SaveInfo()
+    {
+        await OnEditorSave.InvokeAsync(EditorContent);
+    }
+ 
+    private string? GetPropertyValue(TItem item, string propertyName)
+    {
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item)?.ToString();
+    }
+}

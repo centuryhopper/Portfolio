@@ -1,8 +1,13 @@
-@page "/blogcard/{Title}"
+@page "/blog-details/{BlogId:int}"
+@using Ganss.Xss
+
+<style>
+    .bold { font-weight: bold; }
+    .italic { font-style: italic; }
+</style>
 
 
-
-@if (Model is null)
+@if (BlogDTO is null)
 {
     <div class="d-flex justify-content-center" style="display: none;">
         <div id="loadingIndicator" class="spinner-border" role="status">
@@ -12,46 +17,37 @@
 }
 else
 {
-    <div class="text-center">
+    <div class="text-center m-5">
+        <a class="btn btn-primary" href="blogs">
+            Back to Blogs
+        </a>
+        <h2 class="m-5"><b>@BlogDTO.Title</b></h2>
+        <hr />
+        <div class="m-5">
+            @((MarkupString) BlogDTO!.FullDesc)
+            @* @(BlogDTO!.FullDesc) *@
+        </div>
 
-    <a href="blogs"
-        class="m-20 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">Back
-        to Blogs</a>
-    <h2 class="m-5"><b>@Model.Title</b></h2>
-    <hr />
-    <div class="m-5">
-        @Model.FullDesc
-    </div>
-
-        @if (Model.VideoUrls is not null)
+        @if (BlogDTO.VideoUrlDTOs is not null)
         {
-            @foreach (var videoUrlModel in @Model.VideoUrls)
+            @foreach (var v in @BlogDTO.VideoUrlDTOs)
             {
                 <div class="video-player">
-                    <iframe class="embedded-video" src="@videoUrlModel.url" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
+                    @((MarkupString) v.Url)
                 </div>
             }
         }
         <hr />
 
-        @if (Model.BlogImageDTOs != null && Model.BlogImageDTOs.Any())
+        @if (BlogDTO.BlogImageDTOs != null && BlogDTO.BlogImageDTOs.Any())
         {
-            @foreach (var image in Model.BlogImageDTOs)
-            {
-                var base64String = Convert.ToBase64String(image.ImageData);
-                var imageUrl = $"data:{image.ContentType};base64,{base64String}";
-                @* <img src="@imageUrl" alt="Blog Image" style="max-width: 300px; margin-top: 10px;" /> *@
-            }
-            <Client.Layout.Carousel ImageUrls="@(Model.BlogImageDTOs.Select(bi=> {
+            <Client.Layout.Carousel ImageUrls="@(BlogDTO.BlogImageDTOs.Select(bi=> {
                 var base64String = Convert.ToBase64String(bi.ImageData);
                 var imageUrl = $"data:{bi.ContentType};base64,{base64String}";
                 return imageUrl;
             }).ToArray())"/>
         }
 
-        
     </div>
 }
 
@@ -59,30 +55,30 @@ else
 @code {
 
     [Parameter]
-    public string Title { get; set; }
-
-    protected BlogDTO? Model { get; set; }
+    public int BlogId { get; set; }
+    private BlogDTO? BlogDTO { get; set; } = null;
     private HttpClient httpClient;
+    private MarkupString SanitizedBlogContent { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
 
-        var response = await
-        httpClient.GetAsync($"api/Blogs/get-by-title/{Title}");
+        BlogDTO = await
+        httpClient.GetFromJsonAsync<BlogDTO>($"api/Blogs/get-blog/{BlogId}");
 
-        //Console.WriteLine(response.IsSuccessStatusCode);
+        // Console.WriteLine(response.IsSuccessStatusCode);
 
-        if (response.IsSuccessStatusCode)
-        {
-            var data = await response.Content.ReadFromJsonAsync<BlogDTO>();
+        //if (response.IsSuccessStatusCode)
+        //{
+        //    var data = await response.Content.ReadFromJsonAsync<BlogDTO>();
 
-            //var dto = JsonConvert.DeserializeObject<BlogDTO>(data);
-            //System.Console.WriteLine(dto);
+            // var dto = JsonConvert.DeserializeObject<BlogDTO>(data);
+            // System.Console.WriteLine(dto);
 
-            Model = data;
-        }
+            //BlogDTO = data;
+            //SanitizedBlogContent = Helpers.SanitizeHtmlContent(BlogDTO!.FullDesc);
+        //}
     }
-
-
 }
+

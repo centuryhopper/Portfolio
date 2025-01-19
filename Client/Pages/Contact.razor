@@ -1,4 +1,6 @@
 @page "/contact"
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
 @implements IDisposable
 
 
@@ -125,12 +127,13 @@
         {
             // Console.WriteLine(response.Content.ReadAsStringAsync());
             Model = new();
-            await notificationModal.ShowAsync("Success", result.Message, ModalType.SUCCESS);
+            await notificationModal.ShowAsync("Success", result.Message, HandyModalType.SUCCESS);
         }
         else
         {
             Console.WriteLine("failed");
-            await notificationModal.ShowAsync("Error", result.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", result.Message, HandyModalType.ERROR);
         }
     }
 }
+    using HandyBlazorComponents.Models;

@@ -1,0 +1,110 @@
+@page "/edit-blog/{BlogId:int}"
+
+@using System.Text
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
+@attribute [Authorize(Roles = "Admin")]
+
+
+<div class="text-center m-5">
+    <h3>Edit Blog (@BlogDTO.Title)</h3>
+    <a class="btn btn-primary" href="blogs">
+        Back to Blogs
+    </a>
+</div>
+
+@* @IsPageDirty *@
+
+<EditForm Model="@BlogDTO" OnValidSubmit="SaveBlog">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText @bind-Value="BlogDTO.Title" @oninput="@((e) => {
+        //Console.WriteLine(e.Value.ToString());
+        IsPageDirty = true;
+    })" placeholder="Enter your blog title" class="form-control m-3 w-75" />
+
+    <InputText @bind-Value="BlogDTO.PreviewDesc" @oninput="@((e) => {
+        IsPageDirty = true;
+    })" placeholder="Enter your blog preview text" class="form-control m-3 w-75" />
+
+    <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
+        IsPageDirty = true;
+    })" />
+
+    @if (showRichTextEditor)
+    {
+        <div class="w-75">
+            <TinymceTextEditorJs 
+                PreLoadedContent="@BlogDTO.FullDesc"
+                OnContentChanged="@((value) => {
+                    BlogDTO.FullDesc = value;
+                    Console.WriteLine(value);
+                    IsPageDirty = true;
+            })" />
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary m-3">Save</button>
+</EditForm>
+
+
+<HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully."
+    ToastType="HandyToastType.SUCCESS" Duration="5" />
+
+
+<NavigationLock ConfirmExternalNavigation="true" OnBeforeInternalNavigation="@( async (ctx) => {
+    if (IsPageDirty)
+    {
+        var isConfirmed = await jsRuntime.InvokeAsync<bool>("confirm", 
+            "You have unsaved changes. Are you sure you want to leave?");
+        if (!isConfirmed)
+        {
+            ctx.PreventNavigation();
+        }
+    }
+})" />
+
+
+@code {
+
+    private bool IsPageDirty = false;
+
+    [Parameter]
+    public int BlogId { get; set; }
+    private BlogDTO BlogDTO = new();
+    private HttpClient httpClient { get; set; }
+    private HandyToast handyToast = default!;
+    private bool showRichTextEditor = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        BlogDTO = await httpClient.GetFromJsonAsync<BlogDTO>($"api/Blogs/get-blog/{BlogId}");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            showRichTextEditor = true;
+        }
+    }
+
+    private async Task SaveBlog()
+    {
+        // api call
+        // Console.WriteLine(BlogDTO);
+
+        var response = await httpClient.PutAsJsonAsync("api/Blogs/edit-blog", BlogDTO);
+        var responseContent = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+        if (!responseContent.Flag)
+        {
+            _ = handyToast.ShowToastAsync("Error", responseContent.Message, HandyToastType.ERROR);
+        }
+        else
+        {
+            _ = handyToast.ShowToastAsync("Success", responseContent.Message, HandyToastType.SUCCESS);
+            IsPageDirty = false;
+        }
+    }
+}

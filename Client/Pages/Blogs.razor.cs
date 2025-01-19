@@ -7,7 +7,8 @@ using Client.Layout;
 using Microsoft.AspNetCore.Components;
 using Shared.Models;
 using static Shared.Models.ServiceResponses;
-using ModalType = Client.Utils.ModalType;
+using HandyBlazorComponents.Components;
+using HandyBlazorComponents.Models;
 
 namespace Client.Pages;
 
@@ -25,10 +26,13 @@ public partial class Blogs
     protected override async Task OnInitializedAsync()
     {
         // Load sorting preference from session storage
-        var lastRecordedBlogSortState = await sessionStorageService.GetItemAsync<bool>(nameof(BlogPageState.Value.IsNewest));
+        var lastRecordedBlogSortState = await sessionStorageService.GetItemAsync<bool?>(nameof(BlogPageState.Value.IsNewest));
 
-        var action = new ToggleIsNewestAction(lastRecordedState: lastRecordedBlogSortState);
+        var action = new ToggleIsNewestAction(lastRecordedState: lastRecordedBlogSortState ?? false);
         Dispatcher.Dispatch(action);
+
+        // Save the new sorting preference
+        await sessionStorageService.SetItemAsync(nameof(BlogPageState.Value.IsNewest), BlogPageState.Value.IsNewest);
 
         // Initialize the HttpClient
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
@@ -39,15 +43,9 @@ public partial class Blogs
 
     private async Task LoadBlogs()
     {
-        var response = await httpClient.GetAsync("api/Blogs/get-blogs");
-
-        if (response.IsSuccessStatusCode)
-        {
-            BlogCards = await response.Content.ReadFromJsonAsync<IEnumerable<BlogDTO>>();
-
-            // Apply the sorting based on the saved state
-            ApplySorting();
-        }
+        BlogCards = await httpClient.GetFromJsonAsync<IEnumerable<BlogDTO>>("api/Blogs/get-blogs");
+        // Apply the sorting based on the saved state
+        ApplySorting();
     }
 
     private void ApplySorting()
@@ -60,6 +58,8 @@ public partial class Blogs
         {
             BlogCards = BlogCards?.OrderBy(x => x.Date);
         }
+        // need this to make it work
+        StateHasChanged();
     }
 
     private async Task DeleteBlog(int blogId)
@@ -67,7 +67,8 @@ public partial class Blogs
         var isConfirmed = await confirmModal.ShowAsync();
         if (!isConfirmed)
         {
-            Console.WriteLine("Cancelled delete operation");
+            ApplySorting();
+            //Console.WriteLine("Cancelled delete operation");
             return;
         }
 
@@ -76,10 +77,10 @@ public partial class Blogs
 
         if (!result.Flag)
         {
-            await notificationModal.ShowAsync("Error", result.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", result.Message, HandyModalType.ERROR);
         }
 
-        await notificationModal.ShowAsync("Success", result.Message, ModalType.SUCCESS);
+        await notificationModal.ShowAsync("Success", result.Message, HandyModalType.SUCCESS);
         await LoadBlogs();  // Reload the blogs after deletion
     }
 
@@ -89,7 +90,6 @@ public partial class Blogs
         // IsNewest = !IsNewest;
 
 
-        Console.WriteLine(BlogPageState.Value.IsNewest);
         var action = new ToggleIsNewestAction();
 
         // Dispatch an action to toggle the IsNewest state
@@ -98,6 +98,7 @@ public partial class Blogs
         // Save the new sorting preference
         await sessionStorageService.SetItemAsync(nameof(BlogPageState.Value.IsNewest), BlogPageState.Value.IsNewest);
         
+        Console.WriteLine(BlogPageState.Value.IsNewest);
         // Apply sorting
         ApplySorting();
     }

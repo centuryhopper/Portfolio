@@ -1,0 +1,43 @@
+
+<textarea id="@Id"></textarea>
+
+@code {
+
+      
+    private string Content {get;set;} = string.Empty;
+    [Parameter] public string Id {get;set;} = "richTextEditor";
+    [Parameter] public EventCallback<string> OnContentChanged {get;set;}
+    [Parameter] public string PreLoadedContent {get;set;} = string.Empty;
+ 
+
+    [JSInvokable]
+    public async Task OnTinyMCEInitialized()
+    {
+        // Load the content into TinyMCE once it is initialized
+        if (!string.IsNullOrWhiteSpace(PreLoadedContent))
+        {
+            await jsRuntime.InvokeVoidAsync("loadTinyMCEContent", Id, PreLoadedContent);
+        }
+    }
+ 
+    [JSInvokable]
+    public async Task OnTinyMCEChanged()
+    {
+        Content = await jsRuntime.InvokeAsync<string>("getTinyMCEContent", Id);
+        await OnContentChanged.InvokeAsync(Content);
+    }
+
+    public async Task ResetTextEditorContents()
+    {
+        await jsRuntime.InvokeVoidAsync("resetTinyMCEEditor", Id);
+        await OnContentChanged.InvokeAsync(string.Empty);   
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await jsRuntime.InvokeVoidAsync("initTinyMCERichText", Id, DotNetObjectReference.Create(this));
+        }
+    }
+}

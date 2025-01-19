@@ -1,4 +1,6 @@
 @page "/login"
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAccountService accountService
 @* @inject NavigationManager NavigationManager *@
@@ -90,7 +92,7 @@
 
         if (!response.Flag)
         {
-            await notificationModal.ShowAsync("Error", response.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", response.Message, HandyModalType.ERROR);
             return;
         }
 
@@ -103,3 +105,4 @@
     }
 
 }
+    using HandyBlazorComponents.Models;

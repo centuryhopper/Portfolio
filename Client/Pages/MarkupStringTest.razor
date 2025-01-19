@@ -1,0 +1,49 @@
+@page "/markup-test"
+
+@using Ganss.Xss
+
+<h3>Sanitized HTML Example</h3>
+
+@* <TinymceTextEditorJs OnContentChanged="@((value) => {
+    Console.WriteLine(value);
+    RawHtml = value;
+    SanitizeHtml();
+})"/> *@
+
+@((MarkupString) VideoTest)
+
+
+@if (!string.IsNullOrWhiteSpace(SanitizedHtml))
+{
+    <p>Sanitized Output:</p>
+    <div>@((MarkupString)SanitizedHtml)</div>
+}
+
+@code {
+    private string VideoTest = @"
+    <iframe width=""560"" height=""315"" src=""https://www.youtube.com/embed/JDOvUZ3updU?si=WexLlt3ncnAvzl0i"" title=""YouTube video player"" frameborder=""0"" allow=""accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"" referrerpolicy=""strict-origin-when-cross-origin"" allowfullscreen></iframe>
+    ";
+    private string RawHtml { get; set; } = string.Empty;
+    private string SanitizedHtml { get; set; } = "hello there";
+
+    private void SanitizeHtml()
+    {
+        try
+        {
+            // Create an instance of HtmlSanitizer
+            var sanitizer = new HtmlSanitizer();
+
+            // Optional: Configure sanitizer for additional rules
+            sanitizer.AllowedTags.Add("h1");
+            sanitizer.AllowedTags.Add("p");
+            sanitizer.AllowedTags.Add("b");
+
+            // Sanitize the raw HTML
+            SanitizedHtml = sanitizer.Sanitize(RawHtml);
+        }
+        catch (Exception ex)
+        {
+            SanitizedHtml = "Error sanitizing HTML.";
+        }
+    }
+}

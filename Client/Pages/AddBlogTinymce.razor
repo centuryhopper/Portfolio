@@ -1,0 +1,193 @@
+@page "/addblog"
+@using System.Text
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
+@attribute [Authorize(Roles = "Admin")]
+
+
+<div class="text-center m-5">
+    <h3>Add Blog</h3>
+    <a class="btn btn-primary" href="blogs">
+        Back to Blogs
+    </a>
+</div>
+
+@* @IsPageDirty *@
+
+
+<EditForm Model="@BlogDTO" OnValidSubmit="SaveBlog">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText @bind-Value="BlogDTO.Title" placeholder="Enter your blog title" class="form-control m-3 w-75" @oninput="@((e) => {
+        IsPageDirty = true;
+    })"/>
+    <InputText @bind-Value="BlogDTO.PreviewDesc" placeholder="Enter your blog preview text" class="form-control m-3 w-75" @oninput="@((e) => {
+        IsPageDirty = true;
+    })"/>
+    <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
+        IsPageDirty = true;
+    })"/>
+
+    <div class="form-group">
+        <label for="Images" class="m-3">Upload Images</label>
+        <InputFile id="Images" OnChange="HandleFilesSelected" multiple accept="image/*" />
+    </div>
+
+     <div class="form-group">
+        @if (ImagePreviews?.Any() == true)
+        {
+            foreach (var imageUrl in ImagePreviews)
+            {
+                <img src="@imageUrl" alt="Image preview" style="max-width: 200px; margin-top: 10px;" />
+            }
+        }
+    </div>
+
+    <div class="m-3">
+        <input class="form-control" type="number" max="5" min="0" placeholder="Enter number of videos you want to add" 
+               @bind="NumVideos" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+        <input type="button" class="btn btn-secondary m-3" value="Add Videos" @onclick="AddVideos">
+    </div>
+
+    @if (VideoUrls.Count > 0)
+    {
+        @for (int i = 0; i < VideoUrls.Count; i++)
+        {
+            var index = i;
+            <div class="m-3 row">
+                <div class="col">
+                    <label>Video URL @(index+1)</label>
+                    <input class="form-control" type="text" @bind="VideoUrls[index]" placeholder="Enter video URL" />
+                </div>
+                <div class="col">
+                    <input type="button" class="btn btn-danger" @onclick="() => RemoveVideo(index)" value="Remove">
+                </div>
+            </div>
+        }
+    }
+
+
+    <div class="w-75">
+        <TinymceTextEditorJs @ref="TinymceTextEditorJs" OnContentChanged="@((value) => {
+            BlogDTO.FullDesc = value;
+            // Console.WriteLine(value);
+        })" />
+    </div>
+
+    <button type="submit" class="btn btn-primary m-3">Save</button>
+
+</EditForm>
+
+
+<HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
+
+<NavigationLock ConfirmExternalNavigation="true" OnBeforeInternalNavigation="@( async (ctx) => {
+    if (IsPageDirty)
+    {
+        var isConfirmed = await jsRuntime.InvokeAsync<bool>("confirm", 
+            "You have unsaved changes. Are you sure you want to leave?");
+        if (!isConfirmed)
+        {
+            ctx.PreventNavigation();
+        }
+    }
+})" />
+
+@code {
+
+    private bool showRichTextEditor = false;
+    private bool IsPageDirty = false;
+    private int NumVideos = 0;
+
+    private BlogDTO BlogDTO = new();
+    private TinymceTextEditorJs TinymceTextEditorJs = default!;
+
+    private HttpClient httpClient { get; set; }
+    private HandyToast handyToast = default!;
+    private List<byte[]> UploadedImages = [];
+    private List<string> ImagePreviews = [];
+    private List<string> VideoUrls = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            showRichTextEditor = true;
+        }
+    }
+
+    private async Task AddVideos()
+    {
+        if (NumVideos > 5 || VideoUrls.Count == 5)
+        {
+            _ = handyToast.ShowToastAsync("Error", "Please enter in no more than 5 videos per blog", HandyToastType.ERROR);
+            return;
+        }
+        for (int i = 0; i < NumVideos; i++)
+        {
+            VideoUrls.Add(string.Empty); // Add empty placeholders for each video URL
+        }
+
+        NumVideos = 0;
+
+    }
+
+    private void RemoveVideo(int idx)
+    {
+        //Console.WriteLine(idx);
+        //Console.WriteLine(VideoUrls.Count);
+        //VideoUrls.ForEach(v=>Console.WriteLine(v));
+        VideoUrls.RemoveAt(idx);
+    }
+
+    private async Task HandleFilesSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            var buffer = new byte[file.Size];
+            // allow for 2GB size max
+            long maxFileSize = 2L * 1024L * 1024L * 1024L;
+            await file.OpenReadStream(maxAllowedSize: maxFileSize).ReadAsync(buffer);
+            UploadedImages.Add(buffer);
+
+            // Convert to base64 for preview
+            var base64String = Convert.ToBase64String(buffer);
+            var imagePreviewUrl = $"data:{file.ContentType};base64,{base64String}";
+            ImagePreviews.Add(imagePreviewUrl);
+        }
+    }
+
+    private async Task SaveBlog()
+    {
+        // api call
+        BlogDTO.BlogImageDTOs = UploadedImages.Select(image => new BlogImageDTO
+        {
+            ImageData = image,
+            ContentType = "image/jpeg" // Or detect the content type dynamically if needed
+        }).ToList();
+
+        BlogDTO.VideoUrlDTOs = VideoUrls.Select(url => new VideoUrlDTO { Url = url}).ToList();
+
+        // Console.WriteLine(BlogDTO);
+
+        var response = await httpClient.PostAsJsonAsync("api/Blogs/add-blog", BlogDTO);
+        var responseContent = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+        if (!responseContent.Flag)
+        {
+            _ = handyToast.ShowToastAsync("Error", responseContent.Message, HandyToastType.ERROR);
+        }
+        else
+        {
+            _ = handyToast.ShowToastAsync("Success", responseContent.Message, HandyToastType.SUCCESS);
+            BlogDTO.ResetValues();
+            await TinymceTextEditorJs.ResetTextEditorContents();
+            IsPageDirty = false;
+            // NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+    }
+}

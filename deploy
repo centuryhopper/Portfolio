@@ -7,7 +7,7 @@ mkdir ./Server/wwwroot/
 
 # publish and copy over published contents to server
 cd ./Client/
-/usr/bin/dotnet publish -o output
+/home/leo_zhang/.dotnet/dotnet publish -o output
 cp -r ./output/wwwroot/* ../Server/wwwroot/
 rm -rf ./output/*
 rmdir ./output/
