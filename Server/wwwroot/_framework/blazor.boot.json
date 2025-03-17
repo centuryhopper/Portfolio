@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Client",
   "resources": {
-    "hash": "sha256-EiU+BUqn9oUc6kRgXvedEQZQiAGgrAu08/gWtIncP7k=",
+    "hash": "sha256-04FNJbO3n1oB4jRCS3qZy3o1BDKXW9o7D69EzgN8y+8=",
     "jsModuleNative": {
       "dotnet.native.8.0.10.8tug4spt1n.js": "sha256-QVxMlY7ohmjgde/bZMA0dlWDAeuUP+tEfkiSdg4DFcE="
     },
@@ -22,7 +22,7 @@
       "BlazorBootstrap.wasm": "sha256-+jeQHjqZsB2T7+hDAnW2nNVPF+WG1FXmZK6+DEt+gbA=",
       "Blazored.LocalStorage.wasm": "sha256-OaMAAd5n7ORfyur5e3QIyEVKJ76MKIvwbg7/icnnYcU=",
       "Blazored.SessionStorage.wasm": "sha256-nQXuCGHos7iwp2WxRUgarKmWgJYChaVQp2NajgNU3V8=",
-      "Client.wasm": "sha256-+ZNqBjKO9DWV7XcL90mPo0WEmuNC9jOm2Rm7NsnlGeA=",
+      "Client.wasm": "sha256-jz+A+XHodhrnP3EcrQvtrDmuEUequ8GcjazLAb/Z3dk=",
       "CsvHelper.wasm": "sha256-BXz5RCSFBrg3KCDZD4lxgyWmw1YH6vUT0N/oIQdCKfA=",
       "Fluxor.Blazor.Web.ReduxDevTools.wasm": "sha256-jDE1ZNbW4Ejki3o6xiZhe09Wz3ggxn9eZ1/1cRF/I7c=",
       "Fluxor.Blazor.Web.wasm": "sha256-EQY4gKqrJmDxIMv//eRwx0R5QItoj2wrFMh9SGea6RE=",
@@ -53,7 +53,7 @@
       "Microsoft.JSInterop.WebAssembly.wasm": "sha256-rhDkGvVEd5YGb2JsVk1xQC7gCF8TXNfpDfo9dGFhuyI=",
       "netstandard.wasm": "sha256-6xnnjYiBVdo2u9MFW3Q/QJvHiT7Qiduy1oyN/FiepmA=",
       "Newtonsoft.Json.wasm": "sha256-GlXMWKvDs45M2pACoR3Y4Qh8mcrOZGljqmvJY+6JZ5s=",
-      "Shared.wasm": "sha256-A14UJGzGHtuqV7wfs3Sl4H7MXRSA5ipqbh/EJJlqMH0=",
+      "Shared.wasm": "sha256-PlvJSUIdtPwP4c03yv4sdhr7w2krUEbPeo/dMZwYbNY=",
       "System.Buffers.wasm": "sha256-SGGnGUijyqoLUWllAVHycAN7ojP1b3zZ0Y2VSy6IQPc=",
       "System.Collections.Concurrent.wasm": "sha256-i5bpWr5c3A5Kr073oqI2vPb29NGp7bgOZyxk889Dv0k=",
       "System.Collections.Immutable.wasm": "sha256-qWp/kh8k/89mMmpxqjKSHLyhJuzD3GY6E7jh2LDuHLs=",
