@@ -4,54 +4,56 @@
 @implements IDisposable
 
 
-<h1 class="text-center">Contact Me</h1>
 
-<div class="text-center">
-    <AuthorizeView Roles="Admin">
-        <Authorized>
-            <a class="btn btn-secondary" href="contact-list">View Contacts</a>
-        </Authorized>
-    </AuthorizeView>
-    <p>
-        I am excited to meet and work with you! We progress better together so please don't hesitate to contact me using
-        the form below.
-    </p>
-</div>
+<div class="container p-3">
+    <div class="text-center">
+        <h1>Contact Me</h1>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <a class="btn btn-secondary" href="contact-list">View Contacts</a>
+            </Authorized>
+        </AuthorizeView>
+        <p>
+            I am excited to meet and work with you! We progress better together so please don't hesitate to contact me using
+            the form below.
+        </p>
+    </div>
 
-<div class="container-fluid">
-    <EditForm Model="@Model" OnValidSubmit="HandlePostContact">
-        <div class="card">
-            <h4 class="text-center card-header">
-                Contact Form
-            </h4>
-            <div class="card-body">
-                <DataAnnotationsValidator />
-                <p class="form-group">
-                    <label class="m-2">Name</label>
-                    <InputText @bind-Value="Model.Name" class="form-control" />
-                    <ValidationMessage For="@(() => Model.Name)" />
-                </p>
-                <p class="form-group">
-                    <label class="m-2">Email</label>
-                    <InputText @bind-Value="Model.Email" class="form-control" />
-                    <ValidationMessage For="@(() => Model.Email)" />
-                </p>
-                <p class="form-group">
-                    <label class="m-2">Subject</label>
-                    <InputText @bind-Value="Model.Subject" class="form-control" />
-                    <ValidationMessage For="@(() => Model.Subject)" />
-                </p>
-                <p class="form-group">
-                    <label class="m-2">Message</label>
-                    <InputTextArea @bind-Value="Model.Message" class="form-control" />
-                    <ValidationMessage For="@(() => Model.Message)" />
-                </p>
+    <div class="container-fluid">
+        <EditForm Model="@Model" OnValidSubmit="HandlePostContact">
+            <div class="card">
+                <h4 class="text-center card-header">
+                    Contact Form
+                </h4>
+                <div class="card-body">
+                    <DataAnnotationsValidator />
+                    <p class="form-group">
+                        <label class="m-2">Name</label>
+                        <InputText @bind-Value="Model.Name" class="form-control" />
+                        <ValidationMessage For="@(() => Model.Name)" />
+                    </p>
+                    <p class="form-group">
+                        <label class="m-2">Email</label>
+                        <InputText @bind-Value="Model.Email" class="form-control" />
+                        <ValidationMessage For="@(() => Model.Email)" />
+                    </p>
+                    <p class="form-group">
+                        <label class="m-2">Subject</label>
+                        <InputText @bind-Value="Model.Subject" class="form-control" />
+                        <ValidationMessage For="@(() => Model.Subject)" />
+                    </p>
+                    <p class="form-group">
+                        <label class="m-2">Message</label>
+                        <InputTextArea @bind-Value="Model.Message" class="form-control" />
+                        <ValidationMessage For="@(() => Model.Message)" />
+                    </p>
+                </div>
+                <div class="m-3">
+                    <button class="btn btn-primary btn-with-shadow">Submit (@submissionCount submissions)</button>
+                </div>
             </div>
-            <div class="m-3">
-                <button class="btn btn-primary btn-with-shadow">Submit (@submissionCount submissions)</button>
-            </div>
-        </div>
-    </EditForm>
+        </EditForm>
+    </div>
 </div>
 
 @if (isCooldown)
@@ -136,4 +138,4 @@
         }
     }
 }
-    using HandyBlazorComponents.Models;
+

@@ -5,50 +5,52 @@
 
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
-<div class="text-center m-5">
-    <h2><b>All Blogs</b></h2>
-</div>
-<hr />
-<div class="m-5">
-    <div class="d-flex justify-content-between">
-        <button class="btn btn-primary" @onclick="()=>HandleSort()">Sort by @(BlogPageState.Value.IsNewest ? "Oldest" : "Newest")</button>
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <button class="btn btn-secondary" @onclick="@(()=>NavigationManager.NavigateTo("addblog", forceLoad: true))">Add Blog</button>
-            </Authorized>
-        </AuthorizeView>
+<div class="container p-1">
+    <div class="text-center m-5">
+        <h2><b>All Blogs</b></h2>
     </div>
-</div>
-
-@if (BlogCards is null || !BlogCards.Any())
-{
-    <div class="d-flex justify-content-center">
-        <div id="loadingIndicator" class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-}
-else
-{
-    @foreach (var blog in BlogCards)
-    {
-        <div class="card mx-auto mt-3 w-75">
-            <div class="card-body">
-                <a href="@($"blog-details/{blog.Id}")">@blog.Title</a>
-                <h5 class="card-title">@blog.Date.ToString("MM-dd-yyyy")</h5>
-                <p class="card-text">@blog.PreviewDesc</p>
-            </div>
+    <hr />
+    <div class="m-5">
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-primary" @onclick="()=>HandleSort()">Sort by @(BlogPageState.Value.IsNewest ? "Oldest" : "Newest")</button>
             <AuthorizeView Roles="Admin">
                 <Authorized>
-                    <div class="card-footer">
-                        <button class="btn btn-danger" @onclick="()=>DeleteBlog(blog.Id.GetValueOrDefault())">Delete</button>
-                        <button class="btn btn-info" @onclick="@(()=>NavigationManager.NavigateTo($"edit-blog/{blog.Id.GetValueOrDefault()}", forceLoad: true))">Edit</button>
-                    </div>
+                    <button class="btn btn-secondary" @onclick="@(()=>NavigationManager.NavigateTo("addblog", forceLoad: true))">Add Blog</button>
                 </Authorized>
             </AuthorizeView>
         </div>
+    </div>
+
+    @if (BlogCards is null || !BlogCards.Any())
+    {
+        <div class="d-flex justify-content-center">
+            <div id="loadingIndicator" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
     }
-}
+    else
+    {
+        @foreach (var blog in BlogCards)
+        {
+            <div class="card mx-auto mt-3 w-75">
+                <div class="card-body">
+                    <a href="@($"blog-details/{blog.Id}")">@blog.Title</a>
+                    <h5 class="card-title">@blog.Date.ToString("MM-dd-yyyy")</h5>
+                    <p class="card-text">@blog.PreviewDesc</p>
+                </div>
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <div class="card-footer">
+                            <button class="btn btn-danger" @onclick="()=>DeleteBlog(blog.Id.GetValueOrDefault())">Delete</button>
+                            <button class="btn btn-info" @onclick="@(()=>NavigationManager.NavigateTo($"edit-blog/{blog.Id.GetValueOrDefault()}", forceLoad: true))">Edit</button>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        }
+    }
+</div>
 
 <NotificationModal @ref="notificationModal" />
 <ConfirmModal @ref="confirmModal" BodyText="Are you sure you want to delete this blog" />

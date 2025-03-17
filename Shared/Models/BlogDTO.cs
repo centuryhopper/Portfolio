@@ -14,8 +14,6 @@ public class BlogDTO
     public string FullDesc { get; set; }
     [Required]
     public string PreviewDesc { get; set; }
-    public List<BlogImageDTO>? BlogImageDTOs { get; set; }
-    public List<VideoUrlDTO>? VideoUrlDTOs { get; set; }
 
     public void ResetValues()
     {
@@ -23,8 +21,6 @@ public class BlogDTO
         Date = default!;
         FullDesc = default!;
         PreviewDesc = default!;
-        BlogImageDTOs = [];
-        VideoUrlDTOs = [];
     }
 
     public override string ToString()

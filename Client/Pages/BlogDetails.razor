@@ -27,27 +27,6 @@ else
             @((MarkupString) BlogDTO!.FullDesc)
             @* @(BlogDTO!.FullDesc) *@
         </div>
-
-        @if (BlogDTO.VideoUrlDTOs is not null)
-        {
-            @foreach (var v in @BlogDTO.VideoUrlDTOs)
-            {
-                <div class="video-player">
-                    @((MarkupString) v.Url)
-                </div>
-            }
-        }
-        <hr />
-
-        @if (BlogDTO.BlogImageDTOs != null && BlogDTO.BlogImageDTOs.Any())
-        {
-            <Client.Layout.Carousel ImageUrls="@(BlogDTO.BlogImageDTOs.Select(bi=> {
-                var base64String = Convert.ToBase64String(bi.ImageData);
-                var imageUrl = $"data:{bi.ContentType};base64,{base64String}";
-                return imageUrl;
-            }).ToArray())"/>
-        }
-
     </div>
 }
 
@@ -66,19 +45,6 @@ else
 
         BlogDTO = await
         httpClient.GetFromJsonAsync<BlogDTO>($"api/Blogs/get-blog/{BlogId}");
-
-        // Console.WriteLine(response.IsSuccessStatusCode);
-
-        //if (response.IsSuccessStatusCode)
-        //{
-        //    var data = await response.Content.ReadFromJsonAsync<BlogDTO>();
-
-            // var dto = JsonConvert.DeserializeObject<BlogDTO>(data);
-            // System.Console.WriteLine(dto);
-
-            //BlogDTO = data;
-            //SanitizedBlogContent = Helpers.SanitizeHtmlContent(BlogDTO!.FullDesc);
-        //}
     }
 }
 

@@ -1,42 +1,40 @@
-@page "/addblog"
+@page "/addproject"
 @using System.Text
 @using HandyBlazorComponents.Components
 @using HandyBlazorComponents.Models
 @attribute [Authorize(Roles = "Admin")]
 
+
+
 <div class="text-center m-5">
-    <h3>Add Blog</h3>
-    <a class="btn btn-primary" href="blogs">
-        Back to Blogs
+    <h3>Add Project</h3>
+    <a class="btn btn-primary" href="projects">
+        Back to Projects
     </a>
 </div>
 <div class="container">
-    <EditForm Model="@BlogDTO" OnValidSubmit="SaveBlog">
+    <EditForm Model="@ProjectCardDTO" OnValidSubmit="SaveProjectCard">
         <DataAnnotationsValidator />
         <ValidationSummary />
-        <InputText @bind-Value="BlogDTO.Title" placeholder="Enter your blog title" class="form-control m-3 w-75" @oninput="@((e) => {
+        <InputText @bind-Value="ProjectCardDTO.Title" placeholder="Enter your project title" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
-        <InputText @bind-Value="BlogDTO.PreviewDesc" placeholder="Enter your blog preview text" class="form-control m-3 w-75" @oninput="@((e) => {
+        <InputText @bind-Value="ProjectCardDTO.Description" placeholder="Enter a description for your project" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
-        <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
+        <InputText @bind-Value="ProjectCardDTO.ImgUrl" placeholder="Enter the url to an image for your project" class="form-control m-3 w-75" @oninput="@((e) => {
+            IsPageDirty = true;
+        })"/>
+        <InputText @bind-Value="ProjectCardDTO.SourceCodeLink" placeholder="Enter the link to your source code" class="form-control m-3 w-75" @oninput="@((e) => {
+            IsPageDirty = true;
+        })"/>
+        <InputText @bind-Value="ProjectCardDTO.ProjectLink" placeholder="Enter the link to your project" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
 
-        <div class="w-75">
-            <TinymceTextEditorJs @ref="TinymceTextEditorJs" OnContentChanged="@((value) => {
-                BlogDTO.FullDesc = value;
-                // Console.WriteLine(value);
-            })" />
-        </div>
         <button type="submit" class="btn btn-primary m-3">Save</button>
     </EditForm>
 </div>
-
-
-
-
 
 <HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
 
@@ -54,31 +52,21 @@
 
 @code {
 
-    private bool showRichTextEditor = false;
     private bool IsPageDirty = false;
-    private BlogDTO BlogDTO = new();
-    private TinymceTextEditorJs TinymceTextEditorJs = default!;
-
+    private ProjectCardDTO ProjectCardDTO = new();
     private HttpClient httpClient { get; set; }
     private HandyToast handyToast = default!;
 
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+        Console.WriteLine(NavigationManager.BaseUri);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            showRichTextEditor = true;
-        }
-    }
-    private async Task SaveBlog()
+    private async Task SaveProjectCard()
     {
         // api call
-
-        var response = await httpClient.PostAsJsonAsync("api/Blogs/add-blog", BlogDTO);
+        var response = await httpClient.PostAsJsonAsync("api/Projects/add-project", ProjectCardDTO);
         var responseContent = await response.Content.ReadFromJsonAsync<GeneralResponse>();
         if (!responseContent.Flag)
         {
@@ -87,8 +75,7 @@
         else
         {
             _ = handyToast.ShowToastAsync("Success", responseContent.Message, HandyToastType.SUCCESS);
-            BlogDTO.ResetValues();
-            await TinymceTextEditorJs.ResetTextEditorContents();
+            ProjectCardDTO = new();
             IsPageDirty = false;
             // NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }

@@ -1,3 +1,53 @@
+// a nice trick to avoid clogging up the window object
+CUSTOM = {
+    testlog: (value) => {
+        console.log(value);
+    },
+    copyToClipBoard: () => {
+        const outputTextarea = document.getElementById('outputTextarea');
+        // Copy the input value to the clipboard using navigator api
+        navigator.clipboard.writeText(outputTextarea.value)
+        .then(() => {
+            console.log("Copied to clipboard: " + outputTextarea.value);
+        })
+        .catch(err => {
+            console.error("Failed to copy: ", err);
+        });
+    },
+    extractText: () => {
+        const imageInput = document.getElementById('imageInput');
+        const outputTextarea = document.getElementById('outputTextarea');
+
+        //console.log(imageInput.files);
+
+        if (imageInput.files.length === 0)
+        {
+            alert('please upload an image');
+            return;
+        }
+
+        const file = imageInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = () => {
+                    Tesseract.recognize(img)
+                        .then(({ data: { text } }) => {
+                            outputTextarea.value = text;
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    },
+
+}
+
 
 function blazorFocusElement(element){
     if (element) {
