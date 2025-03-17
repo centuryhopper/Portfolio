@@ -22,21 +22,27 @@ public class ProjectsController : ControllerBase
     public async Task<IActionResult> GetAsync()
     {
         var data = await ProjectRepo.GetDataAsync("");
-
         return Ok(data);
     }
 
-    [HttpPost]
-    [Route("post-project")]
+    [HttpDelete("delete-project/{id:int}")]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        var data = await ProjectRepo.DeleteProjectAsync(id);
+        return Ok(data);
+    }
+
+    [HttpPatch("edit-project")]
+    public async Task<IActionResult> UpdateAsync([FromBody] ProjectCardDTO model)
+    {
+        var data = await ProjectRepo.EditProjectAsync(model);
+        return Ok(data);
+    }
+
+    [HttpPost("add-project")]
     public async Task<IActionResult> AddAsync([FromBody] ProjectCardDTO model)
     {
         var data = await ProjectRepo.AddProjectAsync(model);
-
-        if (!data.Flag)
-        {
-            return BadRequest(data);
-        }
-
         return Ok(data);
     }
 }

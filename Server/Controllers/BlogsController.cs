@@ -19,8 +19,7 @@ public class BlogsController : ControllerBase
         this.logger = logger;
     }
 
-    [HttpGet]
-    [Route("get-blogs")]
+    [HttpGet("get-blogs")]
     public async Task<IActionResult> GetAsync()
     {
         // logger.LogWarning("getting blogs");
@@ -43,8 +42,7 @@ public class BlogsController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet]
-    [Route("sort-blogs/{isNewest:bool}")]
+    [HttpGet("sort-blogs/{isNewest:bool}")]
     public async Task<IActionResult> SortAsync(bool isNewest)
     {
         var data = await BlogDataRepo.SortAsync(isNewest);
@@ -52,8 +50,7 @@ public class BlogsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet]
-    [Route("get-blog/{blogId:int}")]
+    [HttpGet("get-blog/{blogId:int}")]
     public async Task<IActionResult> GetBlogById(int blogId)
     {
         var data = await BlogDataRepo.GetBlogById(blogId: blogId);

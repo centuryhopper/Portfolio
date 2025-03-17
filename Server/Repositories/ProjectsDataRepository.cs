@@ -18,8 +18,10 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
 
     public async Task<GeneralResponse> AddProjectAsync(ProjectCardDTO model)
     {
+        var id = await portfolioDBContext.ProjectCards.MaxAsync(x=>x.Id);
         var projectCard = new ProjectCard
         {
+            Id = id + 1,
             Imgurl = model.ImgUrl,
             Title = model.Title,
             Description = model.Description,
@@ -31,11 +33,53 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
         {
             await portfolioDBContext.ProjectCards.AddAsync(projectCard);
             await portfolioDBContext.SaveChangesAsync();
-            return new GeneralResponse(Flag: true, Message: "Added user's message");
+            return new GeneralResponse(Flag: true, Message: "Added project card!");
         }
-        catch (Exception _)
+        catch (Exception ex)
         {
-            return new GeneralResponse(Flag: false, Message: "Error adding user's message");
+            return new GeneralResponse(Flag: false, Message: ex.Message);
+        }
+    }
+
+    public async Task<GeneralResponse> DeleteProjectAsync(int id)
+    {
+        try
+        {
+            var project = await portfolioDBContext.ProjectCards.FindAsync(id);
+            if (project is null)
+            {
+                throw new Exception("project record couldn't be found");
+            }
+            portfolioDBContext.ProjectCards.Remove(project);
+            await portfolioDBContext.SaveChangesAsync();
+            return new GeneralResponse(Flag: true, Message: "Deleted project card!");
+        }
+        catch (Exception ex)
+        {
+            return new GeneralResponse(Flag: false, Message: ex.Message);
+        }
+    }
+
+    public async Task<GeneralResponse> EditProjectAsync(ProjectCardDTO model)
+    {
+        try
+        {
+            var project = await portfolioDBContext.ProjectCards.FindAsync(model.Id);
+            if (project is null)
+            {
+                throw new Exception("project record couldn't be found");
+            }
+            project.Imgurl = model.ImgUrl;
+            project.Title = model.Title;
+            project.Description = model.Description;
+            project.Projectlink = model.ProjectLink;
+            project.Sourcecodelink = model.SourceCodeLink;
+            await portfolioDBContext.SaveChangesAsync();
+            return new GeneralResponse(Flag: true, Message: "Updated project card!");
+        }
+        catch (Exception ex)
+        {
+            return new GeneralResponse(Flag: false, Message: ex.Message);
         }
     }
 
@@ -54,6 +98,7 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
 
         return projectCards.Select(c => new ProjectCardDTO
         {
+            Id = c.Id,
             ImgUrl = c.Imgurl,
             Title = c.Title,
             Description = c.Description,
