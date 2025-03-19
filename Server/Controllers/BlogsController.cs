@@ -29,7 +29,7 @@ public class BlogsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpDelete("delete-blogs/{blogId:int}")]
+    [HttpDelete("delete-blog/{blogId:int}")]
     [Authorize(Roles="Admin")]
     public async Task<IActionResult> DeleteAsync(int blogId)
     {

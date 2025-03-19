@@ -83,13 +83,34 @@ public class ProjectsDataRepository : IProjectsDataRepository<ProjectCardDTO>
         }
     }
 
+    public async Task<ProjectCardDTO?> GetProjectByIdAsync(int projectId)
+    {
+        var project = await portfolioDBContext.ProjectCards.FindAsync(projectId);
+        if (project == null)
+        {
+            return null;
+        }
+        return new ProjectCardDTO {
+            Id = project.Id,
+            ImgUrl = project.Imgurl,
+            Title = project.Title,
+            Description = project.Description,
+            ProjectLink = project.Projectlink,
+            SourceCodeLink = project.Sourcecodelink,
+        };
+    }
+
     public async Task<IEnumerable<ProjectCardDTO>> GetDataAsync(string? searchTerm)
     {
         List<ProjectCard> projectCards = new();
 
-        if (!string.IsNullOrEmpty(searchTerm))
+        if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            projectCards = await portfolioDBContext.ProjectCards.Where(p => p.Title == searchTerm).AsNoTracking().ToListAsync();
+            projectCards = await portfolioDBContext
+            .ProjectCards
+            .Where(p => p.Title.ToLower().Contains(searchTerm.ToLower()))
+            .AsNoTracking()
+            .ToListAsync();
         }
         else
         {
