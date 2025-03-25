@@ -1,4 +1,4 @@
-@page "/edit-blog/{BlogId:int}"
+@page "/edit-project/{BlogId:int}"
 
 @using System.Text
 @using HandyBlazorComponents.Components
@@ -8,42 +8,33 @@
 
 <div class="container">
     <div class="text-center m-5">
-        <h3>Edit Blog (@BlogDTO.Title)</h3>
-        <a class="btn btn-primary" href="blogs">
-            Back to Blogs
+        <h3>Edit Project (@ProjectCardDTO.Title)</h3>
+        <a class="btn btn-primary" href="projects">
+            Back to Projects
         </a>
     </div>
 
-    @if (BlogDTO is not null)
+    @if (ProjectCardDTO is not null)
     {
-        <EditForm Model="@BlogDTO" OnValidSubmit="SaveBlog">
+        <EditForm Model="@ProjectCardDTO" OnValidSubmit="SaveProject">
             <DataAnnotationsValidator />
             <ValidationSummary />
-            <InputText @bind-Value="BlogDTO.Title" @oninput="@((e) => {
-                //Console.WriteLine(e.Value.ToString());
+            <InputText @bind-Value="ProjectCardDTO.Title" @oninput="@((e) => {
+                // Console.WriteLine(e.Value.ToString());
                 IsPageDirty = true;
-            })" placeholder="Enter your blog title" class="form-control m-3 w-75" />
+            })" placeholder="Enter your project title" class="form-control m-3 w-75" />
 
-            <InputText @bind-Value="BlogDTO.PreviewDesc" @oninput="@((e) => {
+            <InputText @bind-Value="ProjectCardDTO.Description" @oninput="@((e) => {
                 IsPageDirty = true;
-            })" placeholder="Enter your blog preview text" class="form-control m-3 w-75" />
+            })" placeholder="Enter your project description" class="form-control m-3 w-75" />
 
-            <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
+            <InputText @bind-Value="ProjectCardDTO.ProjectLink" @oninput="@((e) => {
                 IsPageDirty = true;
-            })" />
+            })" placeholder="Enter your project link" class="form-control m-3 w-75" />
 
-            @if (showRichTextEditor)
-            {
-                <div class="w-75">
-                    <TinymceTextEditorJs 
-                        PreLoadedContent="@BlogDTO.FullDesc"
-                        OnContentChanged="@((value) => {
-                            BlogDTO.FullDesc = value;
-                            Console.WriteLine(value);
-                            IsPageDirty = true;
-                    })" />
-                </div>
-            }
+            <InputText @bind-Value="ProjectCardDTO.SourceCodeLink" @oninput="@((e) => {
+                IsPageDirty = true;
+            })" placeholder="Enter your project source code link" class="form-control m-3 w-75" />
 
             <button type="submit" class="btn btn-primary m-3">Save</button>
         </EditForm>
@@ -56,14 +47,13 @@
 
 <HandyFormTracker />
 
-
 @code {
 
     private bool IsPageDirty = false;
 
     [Parameter]
     public int BlogId { get; set; }
-    private BlogDTO BlogDTO = new();
+    private ProjectCardDTO ProjectCardDTO = new();
     private HttpClient httpClient { get; set; }
     private HandyToast handyToast = default!;
     private bool showRichTextEditor = false;
@@ -71,7 +61,7 @@
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
-        BlogDTO = await httpClient.GetFromJsonAsync<BlogDTO>($"api/Blogs/get-blog/{BlogId}");
+        ProjectCardDTO = await httpClient.GetFromJsonAsync<ProjectCardDTO>($"api/Projects/get-project/{BlogId}");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -82,11 +72,11 @@
         }
     }
 
-    private async Task SaveBlog()
+    private async Task SaveProject()
     {
         // api call
-        // Console.WriteLine(BlogDTO);
-        var response = await httpClient.PutAsJsonAsync("api/Blogs/edit-blog", BlogDTO);
+        // Console.WriteLine(ProjectDTO);
+        var response = await httpClient.PatchAsJsonAsync("api/Projects/edit-project", ProjectCardDTO);
         var responseContent = await response.Content.ReadFromJsonAsync<GeneralResponse>();
         if (!responseContent.Flag)
         {

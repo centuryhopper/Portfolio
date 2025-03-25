@@ -1,4 +1,6 @@
 @page "/projects"
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
 
 <div class="container">
     <div class="m-5">
@@ -36,23 +38,29 @@
         }
         else
         {
-            @foreach (var info in ProjectList)
+            @foreach (var project in ProjectList)
             {
                 <div class="col-12 col-md-6 col-lg-6 col-sm-6">
                     <div class="card">
-                        <img src="@info.ImgUrl" class="card-img-top" alt="Card Image" width="5rem" height="500rem" />
+                        <img src="@project.ImgUrl" class="card-img-top" alt="Card Image" width="5rem" height="500rem" />
                         <div class="card-body" style="width: 35rem; height: 15rem; overflow: auto;">
-                            <h5 class="card-title text-center">@info.Title</h5>
-                            <p class="card-text mx-auto text-center">@info.Description</p>
+                            <h5 class="card-title text-center">@project.Title</h5>
+                            <p class="card-text mx-auto text-center">@project.Description</p>
                             <div class="text-center">
                                 <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
-                                    href="@info.ProjectLink">Link to project
+                                    href="@project.ProjectLink">Link to project
                                 </a>
                                 <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
-                                    href="@info.SourceCodeLink">Source code</a>
-                                <a class="card-link btn btn-primary" target="_blank" rel="noopener noreferrer"
-                                    href="@info.SourceCodeLink">Source code</a>
+                                    href="@project.SourceCodeLink">Source code</a>
                             </div>
+                        </div>
+                        <div class="card-footer">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <button class="btn btn-info" @onclick="@(() => NavigationManager.NavigateTo($"edit-project/{project.Id}", forceLoad: true))">Edit</button>
+                                    <button class="btn btn-danger" @onclick="() => DeleteProject(project.Id)">Delete</button>
+                                </Authorized>
+                            </AuthorizeView>
                         </div>
                     </div>
                 </div>
@@ -61,26 +69,53 @@
     </div>
 </div>
 
+<ConfirmModal @ref="confirmModal" BodyText="Are you sure you want to delete this project" />
+<HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
 
 @code {
-    private IEnumerable<ProjectCardDTO>? ProjectList { get; set; }
+    private ConfirmModal confirmModal = default!;
+    private HandyToast handyToast = default!;
+
+    private List<ProjectCardDTO>? ProjectList { get; set; }
     private string? SearchTerm { get; set; }
     private HttpClient httpClient;
 
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
-        ProjectList = await httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>("api/Projects/get-projects");
+        ProjectList = (await httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>("api/Projects/get-projects")).ToList();
     }
 
-    protected void HandleSearchFilter(ChangeEventArgs e)
+    private async Task DeleteProject(int projectId)
     {
-        SearchTerm = e?.Value?.ToString();
-        if (string.IsNullOrEmpty(SearchTerm))
+        var isConfirmed = await confirmModal.ShowAsync();
+        if (!isConfirmed)
         {
             return;
         }
 
-        ProjectList = ProjectList?.Where(project => project.Title!.ToLower().Contains(SearchTerm.ToLower()));
+        var response = await httpClient.DeleteFromJsonAsync<GeneralResponse>($"api/Projects/delete-project/{projectId}");
+
+        if (!response.Flag)
+        {
+            _ = handyToast.ShowToastAsync("Error", response.Message, HandyToastType.ERROR);
+        }
+        else
+        {
+            _ = handyToast.ShowToastAsync("Success", response.Message, HandyToastType.SUCCESS);
+            var toDelete = ProjectList.Find(x=>x.Id == projectId);
+            if (toDelete is not null)
+            {
+                ProjectList.Remove(toDelete);
+                StateHasChanged();
+            }
+        }
+
+    }
+
+    private async Task HandleSearchFilter(ChangeEventArgs e)
+    {
+        SearchTerm = e?.Value?.ToString();
+        ProjectList = (await httpClient.GetFromJsonAsync<IEnumerable<ProjectCardDTO>>($"api/Projects/get-projects?searchTerm={SearchTerm}")).ToList();
     }
 }

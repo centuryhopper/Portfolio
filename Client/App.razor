@@ -1,7 +1,8 @@
 ﻿@* ensure store is initialized *@
-<Fluxor.Blazor.Web.StoreInitializer/>
+<Fluxor.Blazor.Web.StoreInitializer />
 
-    <CascadingAuthenticationState>
+<CascadingAuthenticationState>
+    <CascadingValue Value="navigationChecker" Name="@(nameof(NavigationChecker))">
         <Router AppAssembly="@typeof(App).Assembly">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -14,6 +15,30 @@
                 </LayoutView>
             </NotFound>
         </Router>
-    </CascadingAuthenticationState>
+    </CascadingValue>
+</CascadingAuthenticationState>
 
+@* 30 minutes *@
+<NavigationChecker @ref="navigationChecker" Seconds="@(30 * 60)" JWT_TOKEN_NAME="@JwtConfig.JWT_TOKEN_NAME" JWT_TOKEN_EXP_DATE="@nameof(JwtConfig.JWT_TOKEN_EXP_DATE)"/>
 
+@code {
+    private NavigationChecker navigationChecker = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await ((ApiAuthenticationStateProvider) AuthenticationStateProvider).GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (await localStorageService.GetItemAsync<long?>(nameof(JwtConfig.JWT_TOKEN_EXP_DATE)) == null)
+            {
+                await localStorageService.SetItemAsync(nameof(JwtConfig.JWT_TOKEN_EXP_DATE), JwtConfig.JWT_TOKEN_EXP_DATE);
+            }
+        }
+    }
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        navigationChecker.SetPageDirtyValue(false);
+        await HandyBlazorService.ResetFormStates();
+    }
+}

@@ -18,7 +18,8 @@ public partial class Blogs
     [Inject] IDispatcher Dispatcher {get;set;}
     protected NotificationModal notificationModal = default!;
     protected ConfirmModal confirmModal = default!;
-    protected IEnumerable<BlogDTO>? BlogCards;
+    private HandyToast handyToast = default!;
+    protected List<BlogDTO>? BlogCards;
     protected bool IsNewest = false;
 
     protected HttpClient httpClient;
@@ -43,7 +44,7 @@ public partial class Blogs
 
     private async Task LoadBlogs()
     {
-        BlogCards = await httpClient.GetFromJsonAsync<IEnumerable<BlogDTO>>("api/Blogs/get-blogs");
+        BlogCards = (await httpClient.GetFromJsonAsync<IEnumerable<BlogDTO>>("api/Blogs/get-blogs")).ToList();
         // Apply the sorting based on the saved state
         ApplySorting();
     }
@@ -52,11 +53,11 @@ public partial class Blogs
     {
         if (BlogPageState.Value.IsNewest)
         {
-            BlogCards = BlogCards?.OrderByDescending(x => x.Date);
+            BlogCards = BlogCards?.OrderByDescending(x => x.Date).ToList();
         }
         else
         {
-            BlogCards = BlogCards?.OrderBy(x => x.Date);
+            BlogCards = BlogCards?.OrderBy(x => x.Date).ToList();
         }
         // need this to make it work
         StateHasChanged();
@@ -72,16 +73,21 @@ public partial class Blogs
             return;
         }
 
-        var response = await httpClient.DeleteAsync($"api/Blogs/delete-blogs/{blogId}");
-        var result = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-
-        if (!result.Flag)
+        var response = await httpClient.DeleteFromJsonAsync<GeneralResponse>($"api/Blogs/delete-blog/{blogId}");
+        if (!response.Flag)
         {
-            await notificationModal.ShowAsync("Error", result.Message, HandyModalType.ERROR);
+            _ = handyToast.ShowToastAsync("Error", response.Message, HandyToastType.ERROR);
         }
-
-        await notificationModal.ShowAsync("Success", result.Message, HandyModalType.SUCCESS);
-        await LoadBlogs();  // Reload the blogs after deletion
+        else
+        {
+            _ = handyToast.ShowToastAsync("Success", response.Message, HandyToastType.SUCCESS);
+            var toDelete = BlogCards.Find(x=>x.Id == blogId);
+            if (toDelete is not null)
+            {
+                BlogCards.Remove(toDelete);
+                StateHasChanged();
+            }
+        }
     }
 
     private async void HandleSort()

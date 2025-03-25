@@ -19,18 +19,23 @@
         <InputText @bind-Value="ProjectCardDTO.Title" placeholder="Enter your project title" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
+        <ValidationMessage For="@(() => ProjectCardDTO.Title)" />
         <InputText @bind-Value="ProjectCardDTO.Description" placeholder="Enter a description for your project" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
+        <ValidationMessage For="@(() => ProjectCardDTO.Description)" />
         <InputText @bind-Value="ProjectCardDTO.ImgUrl" placeholder="Enter the url to an image for your project" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
+        <ValidationMessage For="@(() => ProjectCardDTO.ImgUrl)" />
         <InputText @bind-Value="ProjectCardDTO.SourceCodeLink" placeholder="Enter the link to your source code" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
+        <ValidationMessage For="@(() => ProjectCardDTO.SourceCodeLink)" />
         <InputText @bind-Value="ProjectCardDTO.ProjectLink" placeholder="Enter the link to your project" class="form-control m-3 w-75" @oninput="@((e) => {
             IsPageDirty = true;
         })"/>
+        <ValidationMessage For="@(() => ProjectCardDTO.ProjectLink)" />
 
         <button type="submit" class="btn btn-primary m-3">Save</button>
     </EditForm>
@@ -38,17 +43,9 @@
 
 <HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
 
-<NavigationLock ConfirmExternalNavigation="true" OnBeforeInternalNavigation="@( async (ctx) => {
-    if (IsPageDirty)
-    {
-        var isConfirmed = await jsRuntime.InvokeAsync<bool>("confirm", 
-            "You have unsaved changes. Are you sure you want to leave?");
-        if (!isConfirmed)
-        {
-            ctx.PreventNavigation();
-        }
-    }
-})" />
+
+
+<HandyFormTracker />
 
 @code {
 

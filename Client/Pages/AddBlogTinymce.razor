@@ -4,6 +4,9 @@
 @using HandyBlazorComponents.Models
 @attribute [Authorize(Roles = "Admin")]
 
+@implements IDisposable
+
+
 <div class="text-center m-5">
     <h3>Add Blog</h3>
     <a class="btn btn-primary" href="blogs">
@@ -11,49 +14,46 @@
     </a>
 </div>
 <div class="container">
-    <EditForm Model="@BlogDTO" OnValidSubmit="SaveBlog">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <InputText @bind-Value="BlogDTO.Title" placeholder="Enter your blog title" class="form-control m-3 w-75" @oninput="@((e) => {
-            IsPageDirty = true;
-        })"/>
-        <InputText @bind-Value="BlogDTO.PreviewDesc" placeholder="Enter your blog preview text" class="form-control m-3 w-75" @oninput="@((e) => {
-            IsPageDirty = true;
-        })"/>
-        <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
-            IsPageDirty = true;
-        })"/>
+    @if (BlogDTO is not null)
+    {
+        <EditForm EditContext="@EditContext" OnValidSubmit="SaveBlog">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <InputText @bind-Value="BlogDTO.Title" placeholder="Enter your blog title" class="form-control m-3 w-75" @oninput="@((e) => {
+                IsPageDirty = true;
+            })"/>
+            <ValidationMessage For="@(() => BlogDTO.Title)" />
+            <InputText @bind-Value="BlogDTO.PreviewDesc" placeholder="Enter your blog preview text" class="form-control m-3 w-75" @oninput="@((e) => {
+                IsPageDirty = true;
+            })"/>
+            <ValidationMessage For="@(() => BlogDTO.PreviewDesc)" />
+            <InputDate @bind-Value="BlogDTO.Date" placeholder="Enter the blog date" class="form-control m-3 w-75" @oninput="@((e) => {
+                IsPageDirty = true;
+            })"/>
+            <ValidationMessage For="@(() => BlogDTO.Date)" />
 
-        <div class="w-75">
-            <TinymceTextEditorJs @ref="TinymceTextEditorJs" OnContentChanged="@((value) => {
-                BlogDTO.FullDesc = value;
-                // Console.WriteLine(value);
-            })" />
-        </div>
-        <button type="submit" class="btn btn-primary m-3">Save</button>
-    </EditForm>
+            <div class="w-75">
+                <TinymceTextEditorJs @ref="TinymceTextEditorJs" OnContentChanged="@((value) => {
+                    BlogDTO.FullDesc = value;
+                    // Console.WriteLine(value);
+                })" />
+            </div>
+            <button type="submit" class="btn btn-primary m-3">Save</button>
+        </EditForm>
+    }
 </div>
 
 
-
+<HandyFormTracker />
 
 
 <HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
 
-<NavigationLock ConfirmExternalNavigation="true" OnBeforeInternalNavigation="@( async (ctx) => {
-    if (IsPageDirty)
-    {
-        var isConfirmed = await jsRuntime.InvokeAsync<bool>("confirm", 
-            "You have unsaved changes. Are you sure you want to leave?");
-        if (!isConfirmed)
-        {
-            ctx.PreventNavigation();
-        }
-    }
-})" />
+
 
 @code {
-
+    [CascadingParameter(Name = nameof(NavigationChecker))]
+    public NavigationChecker navigationChecker {get;set;}
     private bool showRichTextEditor = false;
     private bool IsPageDirty = false;
     private BlogDTO BlogDTO = new();
@@ -61,10 +61,32 @@
 
     private HttpClient httpClient { get; set; }
     private HandyToast handyToast = default!;
+    private EditContext EditContext;
+
+
+    public void Dispose()
+    {
+        if (EditContext is not null)
+        {
+            EditContext.OnFieldChanged -= HandleFieldChanged; // Cleanup event
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
         httpClient = httpClientFactory.CreateClient(Constants.HTTP_CLIENT);
+
+        EditContext = new(BlogDTO);
+        EditContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private async void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        // Console.WriteLine("changed field");
+        navigationChecker.SetPageDirtyValue(true);
+        // Refresh UI
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,8 +111,6 @@
             _ = handyToast.ShowToastAsync("Success", responseContent.Message, HandyToastType.SUCCESS);
             BlogDTO.ResetValues();
             await TinymceTextEditorJs.ResetTextEditorContents();
-            IsPageDirty = false;
-            // NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
     }
 }

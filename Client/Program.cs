@@ -1,3 +1,7 @@
+
+global using HandyBlazorComponents.Components.Public;
+global using HandyBlazorComponents.Components.Public.Modals;
+global using Shared;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Client;
@@ -11,6 +15,12 @@ using Client.Utils;
 using Shared.Models;
 using Blazored.SessionStorage;
 using Fluxor;
+using HandyBlazorComponents.Extensions;
+
+/*
+clear nuget cache if not getting the latest version:
+- dotnet nuget locals all --clear && dotnet remove package HandyBlazorComponents ; dotnet add package HandyBlazorComponents
+*/
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -34,6 +44,8 @@ builder.Services.AddScoped(
     sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(Constants.HTTP_CLIENT)
 );
 
+builder.Services.AddHandyBlazorServices();
+
 
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 builder.Services.AddBlazoredSessionStorage();
@@ -46,7 +58,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IContactsService<ContactMeDTO>, ContactsService>();
 
-builder.Services.AddFluxor(options => 
+builder.Services.AddFluxor(options =>
     options.ScanAssemblies(typeof(Program).Assembly));
 
 

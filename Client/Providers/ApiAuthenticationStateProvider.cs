@@ -25,7 +25,7 @@ namespace Client.Providers
         /// <returns></returns>
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            var savedToken = await _localStorage.GetItemAsync<string>(JwtConfig.JWT_TOKEN_NAME);
 
             if (string.IsNullOrWhiteSpace(savedToken))
             {
