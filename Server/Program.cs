@@ -1,4 +1,5 @@
 global using Microsoft.AspNetCore.Authorization;
+global using Shared;
 using System.Text;
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +20,7 @@ using Swashbuckle.AspNetCore.Filters;
 // MUST HAVE IT LIKE THIS FOR NLOG TO RECOGNIZE DOTNET USER-SECRETS INSTEAD OF HARDCODED DELIMIT PLACEHOLDER VALUE FROM APPSETTINGS.JSON
 
 /*
+
     dotnet ef dbcontext scaffold "Name=ConnectionStrings:PortfolioDB" Npgsql.EntityFrameworkCore.PostgreSQL -t blog -t contacttable -t project_card -t skill -t skill_description -o Entities -c PortfolioDBContext --context-dir Contexts -f
 
     to test api in swagger:
@@ -47,7 +49,23 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
 // try
 // {
-    
+
+Run(args);
+
+
+// }
+//  catch (Exception ex)
+// {
+//     logger.Error(ex, "Stopped program because of exception: " + ex);
+//     throw ex;
+// }
+// finally {
+//     LogManager.Shutdown();
+// }
+
+
+static void Run(string[] args)
+{
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
@@ -60,8 +78,10 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     builder.Services.AddHttpClient();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(options=>{
-        options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme {
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+        {
             In = ParameterLocation.Header,
             Name = "Authorization",
             Type = SecuritySchemeType.ApiKey,
@@ -112,11 +132,14 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         options.SignIn.RequireConfirmedAccount = true;
     });
 
-    builder.Services.AddAuthentication(options => {
+    builder.Services.AddAuthentication(options =>
+    {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options => {
-        options.TokenValidationParameters = new TokenValidationParameters {
+    }).AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
@@ -157,12 +180,4 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
 
     app.Run();
-// }
-//  catch (Exception ex)
-// {
-//     logger.Error(ex, "Stopped program because of exception: " + ex);
-//     throw ex;
-// }
-// finally {
-//     LogManager.Shutdown();
-// }
+}
