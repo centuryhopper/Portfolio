@@ -13,11 +13,13 @@ function handleBeforeUnload(event) {
   event.returnValue = "";
 }
 
+// IMPORTANT: Developers should only be calling methods within these objects below from blazor
+
 FORM_HANDLING = {
   getForms: () => {
     let forms = document.querySelectorAll("form");
     //console.log(forms);
-    function trackFormDirtiness(form) {
+    const trackFormDirtiness = (form) => {
       let isDirty = false;
       const initialValues = {};
 
@@ -50,7 +52,7 @@ FORM_HANDLING = {
         isDirty = false;
         resetBeforeUnloads();
       });
-    }
+    };
 
     forms.forEach((f) => {
       trackFormDirtiness(f);
@@ -59,20 +61,25 @@ FORM_HANDLING = {
 };
 
 SESSION_FUNCTIONS = {
-  run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) => {
-    let jwtTimeout = null;
-    let idleTimer = null;
-    let countDownInterval = null;
-    function resetAllTimers() {
+  run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE_NAME) => {
+    let jwtTimeout = undefined;
+    let idleTimer = undefined;
+    let countDownInterval = undefined;
+    let startIdleTimerTimeout = undefined;
+    const resetAllTimers = () => {
       clearInterval(countDownInterval);
       clearTimeout(jwtTimeout);
       clearTimeout(idleTimer);
-    }
+      clearTimeout(startIdleTimerTimeout);
+    };
 
-    function showSessionExpiredPopup(msg) {
+    const showSessionExpiredPopup = (msg) => {
       localStorage.removeItem(JWT_TOKEN_NAME);
-      localStorage.removeItem(JWT_TOKEN_EXP_DATE);
+      localStorage.removeItem(JWT_TOKEN_EXP_DATE_NAME);
+      sessionStorage.removeItem(JWT_TOKEN_NAME);
+      sessionStorage.removeItem(JWT_TOKEN_EXP_DATE_NAME);
       resetBeforeUnloads();
+      resetAllTimers();
       swal
         .fire({
           title: "Notice",
@@ -87,16 +94,17 @@ SESSION_FUNCTIONS = {
             window.location.href = basePath;
           }
         });
-    }
+    };
 
-    function monitorJwtToken() {
+    const monitorJwtToken = () => {
       clearTimeout(jwtTimeout);
       // avoid checking for jwt expiring when modal is up
       if (swal.isVisible()) {
         //console.log("sweet alert pop up is open");
         return;
       }
-      let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE);
+      let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE_NAME);
+      storedTimestamp ??= sessionStorage.getItem(JWT_TOKEN_EXP_DATE_NAME);
       //console.log('storedTimestamp: ' + storedTimestamp);
       if (!storedTimestamp) {
         // If there's no session expiration data, recheck in 10 seconds
@@ -111,42 +119,52 @@ SESSION_FUNCTIONS = {
       if (currentTime >= storedTimestamp) {
         // console.log('session expired');
         // Redirect to session expired page
-        resetAllTimers();
+
         // console.log('token expired');
         showSessionExpiredPopup("Your token has Expired.");
       } else {
         // Convert to milliseconds
-        let timeLeft = (storedTimestamp - currentTime) * 1000;
+        const timeLeft = (storedTimestamp - currentTime) * 1000;
         // console.log('timeLeft: ' + timeLeft);
         jwtTimeout = setTimeout(monitorJwtToken, timeLeft); // Re-check at expiration time
       }
-    }
+    };
 
-    function startIdleTimer(timeout) {
+    const startIdleTimer = () => {
       // give one minute warning
       /*
-                timeout - warningtime = 60000
+          timeout - warningtime = 60000
 
-                formula:
-                if timeout > 60000
-                    warningTime = 60000
-                else
-                    warningTime = timeout - 10000
-            */
+          formula:
+          if timeout > 60000
+              warningTime = 60000
+          else
+              warningTime = timeout - 10000
+      */
+      let getJwt = localStorage.getItem(JWT_TOKEN_NAME);
+      getJwt ??= sessionStorage.getItem(JWT_TOKEN_NAME);
 
-      // make sure we have at least 10 seconds to deal with
-      timeout = Math.max(15000, timeout);
+      // make sure to only run idletimer if user is authenticated
+      if (!getJwt) {
+        // check again in 10 seconds (I arbitrarily chose 10 seconds)
+        startIdleTimerTimeout = setTimeout(startIdleTimer, 10000);
+        return;
+      }
+
+      // make sure we have at least 15 seconds to deal with
+      idleTimeOut = Math.max(15000, idleTimeOut);
       // 5 minutes
       const SESSION_DISPLAY_TIME_IN_MILLISECONDS = 300000;
       const warningTime =
-        timeout > SESSION_DISPLAY_TIME_IN_MILLISECONDS
+        idleTimeOut > SESSION_DISPLAY_TIME_IN_MILLISECONDS
           ? SESSION_DISPLAY_TIME_IN_MILLISECONDS
-          : timeout - 10000;
+          : idleTimeOut - 10000;
 
       function restartIdleTimer() {
         const showWarning = async () => {
           let timeLeftInSeconds = warningTime / 1000;
           // console.log('showing warning');
+          // this is a check to avoid this popup if another pop up is already up such as the token expired pop up
           if (swal.isVisible()) {
             resetAllTimers();
             return;
@@ -169,7 +187,6 @@ SESSION_FUNCTIONS = {
                 countdownEl.innerText = timeLeftInSeconds;
                 if (timeLeftInSeconds <= 0) {
                   swal.close();
-                  resetAllTimers();
                   showSessionExpiredPopup("Your session has Expired.");
                 }
               }, 1000);
@@ -178,18 +195,17 @@ SESSION_FUNCTIONS = {
           if (result.isConfirmed) {
             restartIdleTimer();
           } else {
-            resetAllTimers();
             showSessionExpiredPopup("Your session has Expired.");
           }
         };
 
         clearInterval(countDownInterval);
         clearTimeout(idleTimer);
-        idleTimer = null;
+        idleTimer = undefined;
         // show it in (timeout - warningTime milliseconds)
         // for example, if there's a total of 20 seconds of allowed idle time,
         // and the warning time is 15 seconds left then the pop up will appear 5 seconds after 20 second timer has started
-        idleTimer = setTimeout(showWarning, timeout - warningTime);
+        idleTimer = setTimeout(showWarning, idleTimeOut - warningTime);
       }
 
       // Reset timer on user activity
@@ -221,7 +237,7 @@ SESSION_FUNCTIONS = {
 
       // Start the timer initially
       restartIdleTimer();
-    }
+    };
 
     if (!id || ![1, 2].includes(Number(id))) {
       return;
@@ -231,22 +247,23 @@ SESSION_FUNCTIONS = {
         monitorJwtToken();
         break;
       case 2:
-        startIdleTimer(idleTimeOut);
+        startIdleTimer();
         break;
     }
   },
 };
 
 UI = {
+  // DEPRECATED because of blazor @onkeydown attribute
   // closes the multiselect when user presses escape
-  registerEscapeKeyHandler: (dotNetObject) => {
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") {
-        // console.log('escape pressed');
-        dotNetObject.invokeMethod("CloseDropdown");
-      }
-    });
-  },
+  // registerEscapeKeyHandler: (dotNetObject) => {
+  //   document.addEventListener("keydown", function (event) {
+  //     if (event.key === "Escape") {
+  //       // console.log('escape pressed');
+  //       dotNetObject.invokeMethod("CloseDropdown");
+  //     }
+  //   });
+  // },
 };
 
 FILE = {
