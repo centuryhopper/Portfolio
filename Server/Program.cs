@@ -98,16 +98,6 @@ static void Run(string[] args)
     builder.Services.AddScoped<IProjectsDataRepository<ProjectCardDTO>, ProjectsDataRepository>();
     builder.Services.AddScoped<ISkillsDataRepository<SkillDTO>, SkillsDataRepository>();
 
-    // Configure the Identity database context
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(
-            builder.Environment.IsDevelopment()
-                    ?
-                        builder.Configuration.GetConnectionString("UserManagementDB")
-                    :
-                        Environment.GetEnvironmentVariable("UserManagementDB"))
-            );
-
     // add your custom db contexts here
     builder.Services.AddDbContext<PortfolioDBContext>(options =>
     {
@@ -117,19 +107,6 @@ static void Run(string[] args)
                     :
                         Environment.GetEnvironmentVariable("PortfolioDB")
                     ).EnableSensitiveDataLogging();
-    });
-
-    builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddRoles<ApplicationRole>();
-
-    builder.Services.Configure<IdentityOptions>(options =>
-    {
-        options.Password.RequiredLength = 10;
-        options.Password.RequiredUniqueChars = 3;
-        options.Password.RequireNonAlphanumeric = false;
-        options.SignIn.RequireConfirmedAccount = true;
     });
 
     builder.Services.AddAuthentication(options =>
